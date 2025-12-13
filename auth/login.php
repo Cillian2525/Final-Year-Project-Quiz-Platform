@@ -41,7 +41,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Check if account is locked
                 if ($user['status'] == 'locked') {
                     $error = "Your account is locked. Please contact an administrator.";
-                } elseif ($password === $user['password']) {
+                } elseif (password_verify($password, $user['password'])) {
                     // Password matches - login successful
                     // Store user info in session
                     $_SESSION['user_id'] = $user['id'];
