@@ -60,9 +60,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 if ($stmt->fetch()) {
                     $error = "Username already taken.";
                 } else {
-                    // Create new user account (password stored as plain text)
+                    // Hash password before storing in database
+                    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+                    // Create new user account
                     $stmt = $pdo->prepare("INSERT INTO users (username, email, password, role, status) VALUES (?, ?, ?, ?, 'active')");
-                    $stmt->execute([$username, $email, $password, $role]);
+                    $stmt->execute([$username, $email, $hashed_password, $role]);
                     $success = "Registration successful! You can now <a href='login.php'>login</a>.";
                 }
             }

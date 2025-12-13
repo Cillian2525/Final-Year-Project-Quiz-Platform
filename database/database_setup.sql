@@ -17,12 +17,15 @@ CREATE TABLE IF NOT EXISTS users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- default admin user
+-- IMPORTANT: The password below is hashed. To generate a new hash for 'admin123', run:
+-- php -r "echo password_hash('admin123', PASSWORD_DEFAULT);"
+-- Then replace the hash in the INSERT statement below.
 
 INSERT INTO users (username, email, password, role, status)
-VALUES ('admin', 'admin@quizsystem.com', 'admin123', 'admin', 'active');
+VALUES ('admin', 'admin@quizsystem.com', '$2y$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin', 'active');
 
 -- Email: admin@quizsystem.com
--- Password: admin123
+-- Password: admin123 (stored as hash)
 
 
 
