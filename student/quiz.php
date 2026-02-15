@@ -17,6 +17,33 @@ if (empty($_SESSION['quiz_topic']) || empty($_SESSION['quiz_difficulty'])) {
 $topic = $_SESSION['quiz_topic'];
 $difficulty = $_SESSION['quiz_difficulty'];
 
+$show_result = false;
+$score = 0;
+$total_questions = 0;
+$percentage = 0;
+$error_message = '';
+
+// Handle quiz submission: compare answers and calculate score (attempt not stored yet)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answers'])) {
+    $correct_answers = $_SESSION['quiz_correct_answers'];
+    $question_ids = $_SESSION['quiz_question_ids'];
+    $total_questions = count($correct_answers);
+    $score = 0;
+    foreach ($correct_answers as $i => $correct) {
+        $qid = $question_ids[$i] ?? 0;
+        $submitted = isset($_POST['answers'][$qid]) ? trim($_POST['answers'][$qid]) : '';
+        if ($submitted === $correct) {
+            $score++;
+        }
+    }
+    $percentage = $total_questions > 0 ? round(($score / $total_questions) * 100, 2) : 0;
+    $show_result = true;
+}
+
+// If showing result, skip fetch and form
+if ($show_result) {
+    // Result view is rendered below
+} else {
 // Fetch 5 random questions for this topic + difficulty (prepared statement)
 $sql = "SELECT id, question_text, option_a, option_b, option_c, option_d, correct_answer 
         FROM questions WHERE topic = ? AND difficulty = ? ORDER BY RAND() LIMIT 5";
@@ -33,6 +60,7 @@ if (count($questions) < 5) {
     $_SESSION['quiz_question_ids'] = array_column($questions, 'id');
     $_SESSION['quiz_correct_answers'] = array_column($questions, 'correct_answer');
 }
+} // end else (not showing result)
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -70,7 +98,16 @@ if (count($questions) < 5) {
 
     <section class="page-section" id="quiz">
         <div class="container px-4 px-lg-5">
-            <?php if (!empty($error_message)): ?>
+            <?php if ($show_result): ?>
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <h4 class="card-title">Quiz complete</h4>
+                        <p class="mb-1">You scored <strong><?php echo (int)$score; ?></strong> out of <strong><?php echo (int)$total_questions; ?></strong>.</p>
+                        <p class="mb-3">Percentage: <strong><?php echo number_format($percentage, 1); ?>%</strong></p>
+                        <a href="../dashboards/student_dashboard.php" class="btn btn-primary">Back to dashboard</a>
+                    </div>
+                </div>
+            <?php elseif (!empty($error_message)): ?>
                 <div class="alert alert-warning"><?php echo htmlspecialchars($error_message); ?></div>
                 <a href="../dashboards/student_dashboard.php" class="btn btn-primary">Back to dashboard</a>
             <?php else: ?>
