@@ -52,4 +52,11 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Sample questions (topic: Database Basics)
+INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer) VALUES
+('Database Basics', 'easy', 'What does SQL stand for?', 'Structured Query Language', 'Simple Query Language', 'Standard Query Language', 'Stored Query Language', 'A'),
+('Database Basics', 'easy', 'Which keyword is used to retrieve data from a table?', 'FETCH', 'SELECT', 'GET', 'OPEN', 'B'),
+('Database Basics', 'medium', 'What is a primary key used for?', 'To sort results', 'To uniquely identify each row in a table', 'To link tables only', 'To encrypt data', 'B'),
+('Database Basics', 'medium', 'Which clause filters rows in a SELECT statement?', 'FILTER', 'WHERE', 'HAVING', 'LIMIT', 'B'),
+('Database Basics', 'hard', 'What does a FOREIGN KEY constraint enforce?', 'Uniqueness of values', 'Referential integrity between tables', 'Default values', 'Index creation', 'B');
 
