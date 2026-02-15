@@ -23,7 +23,7 @@ $total_questions = 0;
 $percentage = 0;
 $error_message = '';
 
-// Handle quiz submission: compare answers and calculate score (attempt not stored yet)
+// Handle quiz submission: compare answers, calculate score, store attempt
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answers'])) {
     $correct_answers = $_SESSION['quiz_correct_answers'];
     $question_ids = $_SESSION['quiz_question_ids'];
@@ -37,6 +37,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answ
         }
     }
     $percentage = $total_questions > 0 ? round(($score / $total_questions) * 100, 2) : 0;
+
+    // Time taken in seconds (from when quiz was loaded)
+    $time_taken = isset($_SESSION['quiz_start_time']) ? (time() - (int)$_SESSION['quiz_start_time']) : null;
+
+    // Insert attempt into quiz_attempts (prepared statement)
+    $ins = "INSERT INTO quiz_attempts (user_id, topic, difficulty, score, total_questions, percentage, time_taken) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $pdo->prepare($ins);
+    $stmt->execute([
+        (int)$_SESSION['user_id'],
+        $topic,
+        $difficulty,
+        $score,
+        $total_questions,
+        $percentage,
+        $time_taken
+    ]);
+
+    // Clear quiz session so refresh doesn't resubmit
+    unset($_SESSION['quiz_topic'], $_SESSION['quiz_difficulty'], $_SESSION['quiz_question_ids'], $_SESSION['quiz_correct_answers'], $_SESSION['quiz_start_time']);
     $show_result = true;
 }
 
@@ -59,6 +78,7 @@ if (count($questions) < 5) {
     // Store question IDs and correct answers in session for marking later
     $_SESSION['quiz_question_ids'] = array_column($questions, 'id');
     $_SESSION['quiz_correct_answers'] = array_column($questions, 'correct_answer');
+    $_SESSION['quiz_start_time'] = time(); // for time_taken when attempt is saved
 }
 } // end else (not showing result)
 ?>
@@ -99,11 +119,12 @@ if (count($questions) < 5) {
     <section class="page-section" id="quiz">
         <div class="container px-4 px-lg-5">
             <?php if ($show_result): ?>
-                <div class="card">
+                <div class="card mx-auto" style="max-width: 28rem;">
                     <div class="card-body text-center py-5">
-                        <h4 class="card-title">Quiz complete</h4>
+                        <h4 class="card-title mb-3">Quiz complete</h4>
                         <p class="mb-1">You scored <strong><?php echo (int)$score; ?></strong> out of <strong><?php echo (int)$total_questions; ?></strong>.</p>
-                        <p class="mb-3">Percentage: <strong><?php echo number_format($percentage, 1); ?>%</strong></p>
+                        <p class="mb-2">Percentage: <strong><?php echo number_format($percentage, 1); ?>%</strong></p>
+                        <p class="text-muted small mb-3">Your attempt has been recorded.</p>
                         <a href="../dashboards/student_dashboard.php" class="btn btn-primary">Back to dashboard</a>
                     </div>
                 </div>
