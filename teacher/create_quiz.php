@@ -2,19 +2,19 @@
 session_start();
 require '../includes/db_connect.php';
 
-// Only teachers can access this page
+// Security: only teachers may access create quiz
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
     header('Location: ../auth/login.php');
     exit;
 }
 
-// Handle form submit: store topic + difficulty in session and redirect to student quiz
+// Handle form submit: validate then store topic + difficulty in session
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $topic = trim($_POST['topic'] ?? '');
     $difficulty = $_POST['difficulty'] ?? '';
-
     $valid_difficulties = ['easy', 'medium', 'hard'];
-    if ($topic !== '' && in_array($difficulty, $valid_difficulties, true)) {
+    // Topic must be non-empty and within column length; difficulty must be whitelisted
+    if ($topic !== '' && strlen($topic) <= 100 && in_array($difficulty, $valid_difficulties, true)) {
         $_SESSION['quiz_topic'] = $topic;
         $_SESSION['quiz_difficulty'] = $difficulty;
         header('Location: ../student/quiz.php');

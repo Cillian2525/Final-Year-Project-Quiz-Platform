@@ -2,26 +2,33 @@
 session_start();
 require '../includes/db_connect.php';
 
-// Only students can take the quiz
+// Security: only students may take quizzes
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header('Location: ../auth/login.php');
     exit;
 }
 
-// Must have topic and difficulty from teacher (create quiz)
+// Require valid session data from teacher (create quiz)
 if (empty($_SESSION['quiz_topic']) || empty($_SESSION['quiz_difficulty'])) {
     header('Location: ../dashboards/student_dashboard.php');
     exit;
 }
 
-$topic = $_SESSION['quiz_topic'];
+// Validate session topic and difficulty before use
+$valid_difficulties = ['easy', 'medium', 'hard'];
+$topic = trim((string)$_SESSION['quiz_topic']);
 $difficulty = $_SESSION['quiz_difficulty'];
+if (!in_array($difficulty, $valid_difficulties, true) || $topic === '' || strlen($topic) > 100) {
+    header('Location: ../dashboards/student_dashboard.php');
+    exit;
+}
 
 $show_result = false;
 $score = 0;
 $total_questions = 0;
 $percentage = 0;
 $error_message = '';
+$save_ok = true; // set to false if INSERT fails
 
 // Handle quiz submission: compare answers, calculate score, store attempt
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answers'])) {
@@ -29,10 +36,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answ
     $question_ids = $_SESSION['quiz_question_ids'];
     $total_questions = count($correct_answers);
     $score = 0;
+    $valid_choices = ['A', 'B', 'C', 'D'];
     foreach ($correct_answers as $i => $correct) {
-        $qid = $question_ids[$i] ?? 0;
-        $submitted = isset($_POST['answers'][$qid]) ? trim($_POST['answers'][$qid]) : '';
-        if ($submitted === $correct) {
+        $qid = (int)($question_ids[$i] ?? 0);
+        $submitted = isset($_POST['answers'][$qid]) ? strtoupper(trim((string)$_POST['answers'][$qid])) : '';
+        if (in_array($submitted, $valid_choices, true) && $submitted === $correct) {
             $score++;
         }
     }
@@ -41,18 +49,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answ
     // Time taken in seconds (from when quiz was loaded)
     $time_taken = isset($_SESSION['quiz_start_time']) ? (time() - (int)$_SESSION['quiz_start_time']) : null;
 
-    // Insert attempt into quiz_attempts (prepared statement)
-    $ins = "INSERT INTO quiz_attempts (user_id, topic, difficulty, score, total_questions, percentage, time_taken) VALUES (?, ?, ?, ?, ?, ?, ?)";
-    $stmt = $pdo->prepare($ins);
-    $stmt->execute([
-        (int)$_SESSION['user_id'],
-        $topic,
-        $difficulty,
-        $score,
-        $total_questions,
-        $percentage,
-        $time_taken
-    ]);
+    // Store attempt (prepared statement); handle DB errors safely
+    $save_ok = false;
+    try {
+        $ins = "INSERT INTO quiz_attempts (user_id, topic, difficulty, score, total_questions, percentage, time_taken) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        $stmt = $pdo->prepare($ins);
+        $stmt->execute([
+            (int)$_SESSION['user_id'],
+            $topic,
+            $difficulty,
+            $score,
+            $total_questions,
+            $percentage,
+            $time_taken
+        ]);
+        $save_ok = true;
+    } catch (PDOException $e) {
+        // Attempt not saved; result still shown below
+    }
 
     // Clear quiz session so refresh doesn't resubmit
     unset($_SESSION['quiz_topic'], $_SESSION['quiz_difficulty'], $_SESSION['quiz_question_ids'], $_SESSION['quiz_correct_answers'], $_SESSION['quiz_start_time']);
@@ -124,7 +138,7 @@ if (count($questions) < 5) {
                         <h4 class="card-title mb-3">Quiz complete</h4>
                         <p class="mb-1">You scored <strong><?php echo (int)$score; ?></strong> out of <strong><?php echo (int)$total_questions; ?></strong>.</p>
                         <p class="mb-2">Percentage: <strong><?php echo number_format($percentage, 1); ?>%</strong></p>
-                        <p class="text-muted small mb-3">Your attempt has been recorded.</p>
+                        <p class="text-muted small mb-3"><?php echo $save_ok ? 'Your attempt has been recorded.' : 'Your result could not be saved.'; ?></p>
                         <a href="../dashboards/student_dashboard.php" class="btn btn-primary">Back to dashboard</a>
                     </div>
                 </div>
