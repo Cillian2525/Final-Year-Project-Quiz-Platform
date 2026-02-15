@@ -17,17 +17,39 @@ CREATE TABLE IF NOT EXISTS users (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- default admin user
--- IMPORTANT: The password below is hashed. To generate a new hash for 'admin123', run:
--- php -r "echo password_hash('admin123', PASSWORD_DEFAULT);"
--- Then replace the hash in the INSERT statement below.
 
 INSERT INTO users (username, email, password, role, status)
-VALUES ('admin', 'admin@quizsystem.com', '$2y$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy', 'admin', 'active');
+VALUES ('admin', 'admin@quizsystem.com', '$2y$10$JVW3etjJfnc2scZFDn./QuqNPii5u5Bo91E1kMCqMIc9K1Deu/RGa', 'admin', 'active');
 
 -- Email: admin@quizsystem.com
 -- Password: admin123 (stored as hash)
 
+-- Questions table (MCQ bank for quizzes)
+CREATE TABLE IF NOT EXISTS questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    topic VARCHAR(100) NOT NULL,
+    difficulty ENUM('easy', 'medium', 'hard') NOT NULL,
+    question_text TEXT NOT NULL,
+    option_a VARCHAR(255) NOT NULL,
+    option_b VARCHAR(255) NOT NULL,
+    option_c VARCHAR(255) NOT NULL,
+    option_d VARCHAR(255) NOT NULL,
+    correct_answer ENUM('A', 'B', 'C', 'D') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-
+-- Quiz attempts (one row per student attempt)
+CREATE TABLE IF NOT EXISTS quiz_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    topic VARCHAR(100) NOT NULL,
+    difficulty ENUM('easy', 'medium', 'hard') NOT NULL,
+    score INT NOT NULL,
+    total_questions INT NOT NULL,
+    percentage DECIMAL(5,2) NOT NULL,
+    time_taken INT DEFAULT NULL COMMENT 'seconds',
+    attempt_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
