@@ -58,5 +58,8 @@ INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, opt
 ('Database Basics', 'easy', 'Which keyword is used to retrieve data from a table?', 'FETCH', 'SELECT', 'GET', 'OPEN', 'B'),
 ('Database Basics', 'medium', 'What is a primary key used for?', 'To sort results', 'To uniquely identify each row in a table', 'To link tables only', 'To encrypt data', 'B'),
 ('Database Basics', 'medium', 'Which clause filters rows in a SELECT statement?', 'FILTER', 'WHERE', 'HAVING', 'LIMIT', 'B'),
-('Database Basics', 'hard', 'What does a FOREIGN KEY constraint enforce?', 'Uniqueness of values', 'Referential integrity between tables', 'Default values', 'Index creation', 'B');
+('Database Basics', 'hard', 'What does a FOREIGN KEY constraint enforce?', 'Uniqueness of values', 'Referential integrity between tables', 'Default values', 'Index creation', 'B'),
+('Database Basics', 'easy', 'Which SQL command adds new rows to a table?', 'ADD', 'INSERT', 'CREATE', 'UPDATE', 'B'),
+('Database Basics', 'easy', 'What type of database uses tables and rows?', 'Document', 'Relational', 'Graph', 'Key-value', 'B'),
+('Database Basics', 'easy', 'Which keyword removes rows from a table?', 'REMOVE', 'DROP', 'DELETE', 'CLEAR', 'C');
 
