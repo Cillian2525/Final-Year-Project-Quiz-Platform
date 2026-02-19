@@ -17,7 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($topic !== '' && strlen($topic) <= 100 && in_array($difficulty, $valid_difficulties, true)) {
         $_SESSION['quiz_topic'] = $topic;
         $_SESSION['quiz_difficulty'] = $difficulty;
-        header('Location: ../student/quiz.php');
+        // In this simple version we don't persist quizzes to a table yet.
+        // The topic and difficulty are stored in the teacher's session only.
+        header('Location: ../dashboards/teacher_dashboard.php');
         exit;
     }
 }
