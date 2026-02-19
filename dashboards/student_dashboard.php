@@ -95,7 +95,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
                             <i class="bi-book fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Take Quiz</h4>
                             <p class="card-text text-muted">Browse available quizzes</p>
-                            <a href="#" class="btn btn-primary">Browse quizzes</a>
+                            <a href="../student/quiz.php" class="btn btn-primary">Browse quizzes</a>
                         </div>
                     </div>
                 </div>
