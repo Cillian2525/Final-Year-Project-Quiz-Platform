@@ -8,21 +8,30 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     exit;
 }
 
-// Ensure we have a topic and difficulty to use
+// Quiz must be started with a valid quiz_id
 $valid_difficulties = ['easy', 'medium', 'hard'];
-if (empty($_SESSION['quiz_topic']) || empty($_SESSION['quiz_difficulty'])) {
-    try {
-        $stmt = $pdo->query("SELECT DISTINCT topic FROM questions ORDER BY topic LIMIT 1");
-        $defaultTopic = $stmt->fetchColumn();
-        if ($defaultTopic) {
-            $_SESSION['quiz_topic'] = $defaultTopic;
-            $_SESSION['quiz_difficulty'] = 'easy';
-        }
-    } catch (PDOException $e) {}
+$quiz_id = isset($_GET['quiz_id']) ? (int)$_GET['quiz_id'] : 0;
+if ($quiz_id <= 0) {
+    header('Location: ../dashboards/student_dashboard.php');
+    exit;
 }
 
-$topic = trim((string)($_SESSION['quiz_topic'] ?? ''));
-$difficulty = $_SESSION['quiz_difficulty'] ?? '';
+// Fetch quiz record from quizzes table
+try {
+    $stmt = $pdo->prepare("SELECT topic, difficulty FROM quizzes WHERE id = ?");
+    $stmt->execute([$quiz_id]);
+    $quiz = $stmt->fetch();
+} catch (PDOException $e) {
+    $quiz = false;
+}
+
+if (!$quiz) {
+    header('Location: ../dashboards/student_dashboard.php');
+    exit;
+}
+
+$topic = trim((string)$quiz['topic']);
+$difficulty = $quiz['difficulty'];
 if ($topic === '' || strlen($topic) > 100 || !in_array($difficulty, $valid_difficulties, true)) {
     header('Location: ../dashboards/student_dashboard.php');
     exit;
