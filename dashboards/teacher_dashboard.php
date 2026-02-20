@@ -10,10 +10,10 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
     exit;
 }
 
-// Fetch quizzes created by this teacher for the \"My Quizzes\" list
+// Fetch quizzes created by this teacher for the "My Quizzes" list
 $my_quizzes = [];
 try {
-    $stmt = $pdo->prepare(\"SELECT id, topic, difficulty, created_at FROM quizzes WHERE created_by = ? ORDER BY created_at DESC\");
+    $stmt = $pdo->prepare("SELECT id, topic, difficulty, created_at FROM quizzes WHERE created_by = ? ORDER BY created_at DESC");
     $stmt->execute([(int)$_SESSION['user_id']]);
     $my_quizzes = $stmt->fetchAll();
 } catch (PDOException $e) {
