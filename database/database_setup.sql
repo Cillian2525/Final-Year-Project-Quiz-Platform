@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS questions (
 CREATE TABLE IF NOT EXISTS quiz_attempts (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
+    quiz_id INT NOT NULL,
     topic VARCHAR(100) NOT NULL,
     difficulty ENUM('easy', 'medium', 'hard') NOT NULL,
     score INT NOT NULL,
@@ -49,7 +50,8 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
     percentage DECIMAL(5,2) NOT NULL,
     time_taken INT DEFAULT NULL COMMENT 'seconds',
     attempt_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Quizzes table (persistent quizzes created by teachers)
@@ -72,4 +74,3 @@ INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, opt
 ('Database Basics', 'easy', 'Which SQL command adds new rows to a table?', 'ADD', 'INSERT', 'CREATE', 'UPDATE', 'B'),
 ('Database Basics', 'easy', 'What type of database uses tables and rows?', 'Document', 'Relational', 'Graph', 'Key-value', 'B'),
 ('Database Basics', 'easy', 'Which keyword removes rows from a table?', 'REMOVE', 'DROP', 'DELETE', 'CLEAR', 'C');
-

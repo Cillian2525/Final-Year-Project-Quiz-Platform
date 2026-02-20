@@ -63,8 +63,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answ
 
     $save_ok = false;
     try {
-        $stmt = $pdo->prepare("INSERT INTO quiz_attempts (user_id, topic, difficulty, score, total_questions, percentage, time_taken) VALUES (?, ?, ?, ?, ?, ?, ?)");
-        $stmt->execute([(int)$_SESSION['user_id'], $topic, $difficulty, $score, $total_questions, $percentage, $time_taken]);
+        $stmt = $pdo->prepare("INSERT INTO quiz_attempts (user_id, quiz_id, topic, difficulty, score, total_questions, percentage, time_taken) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->execute([(int)$_SESSION['user_id'], $quiz_id, $topic, $difficulty, $score, $total_questions, $percentage, $time_taken]);
         $save_ok = true;
     } catch (PDOException $e) {}
 
