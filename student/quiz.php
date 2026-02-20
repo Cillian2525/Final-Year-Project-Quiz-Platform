@@ -8,9 +8,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     exit;
 }
 
-// Quiz must be started with a valid quiz_id
+// Quiz must be started with a valid quiz_id (from GET on first load, POST on submit)
 $valid_difficulties = ['easy', 'medium', 'hard'];
-$quiz_id = isset($_GET['quiz_id']) ? (int)$_GET['quiz_id'] : 0;
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $quiz_id = isset($_POST['quiz_id']) ? (int)$_POST['quiz_id'] : 0;
+} else {
+    $quiz_id = isset($_GET['quiz_id']) ? (int)$_GET['quiz_id'] : 0;
+}
 if ($quiz_id <= 0) {
     header('Location: ../dashboards/student_dashboard.php');
     exit;
@@ -68,7 +72,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answ
         $save_ok = true;
     } catch (PDOException $e) {}
 
-    unset($_SESSION['quiz_topic'], $_SESSION['quiz_difficulty'], $_SESSION['quiz_question_ids'], $_SESSION['quiz_correct_answers'], $_SESSION['quiz_start_time']);
+    unset($_SESSION['quiz_question_ids'], $_SESSION['quiz_correct_answers'], $_SESSION['quiz_start_time']);
     $show_result = true;
 }
 
@@ -137,6 +141,7 @@ if (!$show_result) {
                 <a href="../dashboards/student_dashboard.php" class="btn btn-primary">Back to dashboard</a>
             <?php else: ?>
                 <form method="post" action="quiz.php">
+                    <input type="hidden" name="quiz_id" value="<?php echo (int)$quiz_id; ?>">
                     <?php foreach ($questions as $i => $q): ?>
                         <div class="card mb-4">
                             <div class="card-body">
