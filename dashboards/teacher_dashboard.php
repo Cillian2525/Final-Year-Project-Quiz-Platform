@@ -9,6 +9,16 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
     header('Location: ../auth/login.php');
     exit;
 }
+
+// Fetch quizzes created by this teacher for the \"My Quizzes\" list
+$my_quizzes = [];
+try {
+    $stmt = $pdo->prepare(\"SELECT id, topic, difficulty, created_at FROM quizzes WHERE created_by = ? ORDER BY created_at DESC\");
+    $stmt->execute([(int)$_SESSION['user_id']]);
+    $my_quizzes = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $my_quizzes = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -111,6 +121,37 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- My Quizzes list -->
+    <section class="page-section" id="my-quizzes">
+        <div class="container px-4 px-lg-5">
+            <h2 class="text-center mt-0 mb-4">My Quizzes</h2>
+            <?php if (empty($my_quizzes)): ?>
+                <p class="text-muted text-center">You have not created any quizzes yet.</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col">Topic</th>
+                                <th scope="col">Difficulty</th>
+                                <th scope="col">Created</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($my_quizzes as $quiz): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($quiz['topic']); ?></td>
+                                    <td class="text-capitalize"><?php echo htmlspecialchars($quiz['difficulty']); ?></td>
+                                    <td><?php echo htmlspecialchars($quiz['created_at']); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
 
