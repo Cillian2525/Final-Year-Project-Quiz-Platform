@@ -8,19 +8,24 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
     exit;
 }
 
-// Handle form submit: validate then store topic + difficulty in session
+// Handle form submit: insert quiz into database
+$success_message = '';
+$error_message = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $topic = trim($_POST['topic'] ?? '');
     $difficulty = $_POST['difficulty'] ?? '';
     $valid_difficulties = ['easy', 'medium', 'hard'];
-    // Topic must be non-empty and within column length; difficulty must be whitelisted
+    
     if ($topic !== '' && strlen($topic) <= 100 && in_array($difficulty, $valid_difficulties, true)) {
-        $_SESSION['quiz_topic'] = $topic;
-        $_SESSION['quiz_difficulty'] = $difficulty;
-        // In this simple version we don't persist quizzes to a table yet.
-        // The topic and difficulty are stored in the teacher's session only.
-        header('Location: ../dashboards/teacher_dashboard.php');
-        exit;
+        try {
+            $stmt = $pdo->prepare("INSERT INTO quizzes (topic, difficulty, created_by) VALUES (?, ?, ?)");
+            $stmt->execute([$topic, $difficulty, (int)$_SESSION['user_id']]);
+            $success_message = "Quiz created successfully! Topic: " . htmlspecialchars($topic) . ", Difficulty: " . htmlspecialchars($difficulty);
+        } catch (PDOException $e) {
+            $error_message = "Failed to create quiz. Please try again.";
+        }
+    } else {
+        $error_message = "Invalid topic or difficulty selected.";
     }
 }
 
@@ -71,6 +76,12 @@ try {
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-lg-6">
+                    <?php if (!empty($success_message)): ?>
+                        <div class="alert alert-success"><?php echo $success_message; ?></div>
+                    <?php endif; ?>
+                    <?php if (!empty($error_message)): ?>
+                        <div class="alert alert-danger"><?php echo htmlspecialchars($error_message); ?></div>
+                    <?php endif; ?>
                     <div class="card">
                         <div class="card-body p-4">
                             <form method="post" action="">
