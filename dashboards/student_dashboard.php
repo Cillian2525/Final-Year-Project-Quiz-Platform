@@ -9,6 +9,18 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header('Location: ../auth/login.php');
     exit;
 }
+
+// Load all available quizzes for students to browse
+$available_quizzes = [];
+try {
+    $stmt = $pdo->query("SELECT q.id, q.topic, q.difficulty, q.created_at, u.username AS teacher_name
+                         FROM quizzes q
+                         JOIN users u ON q.created_by = u.id
+                         ORDER BY q.created_at DESC");
+    $available_quizzes = $stmt->fetchAll();
+} catch (PDOException $e) {
+    $available_quizzes = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -95,7 +107,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
                             <i class="bi-book fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Take Quiz</h4>
                             <p class="card-text text-muted">Browse available quizzes</p>
-                            <a href="../student/quiz.php" class="btn btn-primary">Browse quizzes</a>
+                            <a href="#available-quizzes" class="btn btn-primary">Browse quizzes</a>
                         </div>
                     </div>
                 </div>
@@ -111,6 +123,45 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
                     </div>
                 </div>
             </div>
+        </div>
+    </section>
+
+    <!-- Available quizzes for students -->
+    <section class="page-section" id="available-quizzes">
+        <div class="container px-4 px-lg-5">
+            <h2 class="text-center mt-0 mb-4">Available Quizzes</h2>
+            <?php if (empty($available_quizzes)): ?>
+                <p class="text-muted text-center">No quizzes are available yet. Please check back later.</p>
+            <?php else: ?>
+                <div class="table-responsive">
+                    <table class="table table-striped align-middle">
+                        <thead>
+                            <tr>
+                                <th scope="col">Topic</th>
+                                <th scope="col">Difficulty</th>
+                                <th scope="col">Teacher</th>
+                                <th scope="col">Created</th>
+                                <th scope="col">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($available_quizzes as $quiz): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($quiz['topic']); ?></td>
+                                    <td class="text-capitalize"><?php echo htmlspecialchars($quiz['difficulty']); ?></td>
+                                    <td><?php echo htmlspecialchars($quiz['teacher_name']); ?></td>
+                                    <td><?php echo htmlspecialchars($quiz['created_at']); ?></td>
+                                    <td>
+                                        <a href="../student/quiz.php?quiz_id=<?php echo (int)$quiz['id']; ?>" class="btn btn-sm btn-primary">
+                                            Start Quiz
+                                        </a>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+            <?php endif; ?>
         </div>
     </section>
 
