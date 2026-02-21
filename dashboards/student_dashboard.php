@@ -14,9 +14,9 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 $available_quizzes = [];
 try {
     $stmt = $pdo->query("SELECT q.id, q.topic, q.difficulty, q.created_at, u.username AS teacher_name
-                         FROM quizzes q
-                         JOIN users u ON q.created_by = u.id
-                         ORDER BY q.created_at DESC");
+                        FROM quizzes q
+                        JOIN users u ON q.created_by = u.id
+                        ORDER BY q.created_at DESC");
     $available_quizzes = $stmt->fetchAll();
 } catch (PDOException $e) {
     $available_quizzes = [];
@@ -141,7 +141,7 @@ try {
                             <i class="bi-bar-chart fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">View Results</h4>
                             <p class="card-text text-muted">Check your progress</p>
-                            <a href="#" class="btn btn-primary">My results</a>
+                            <a href="../student/results.php" class="btn btn-primary">My results</a>
                         </div>
                     </div>
                 </div>
