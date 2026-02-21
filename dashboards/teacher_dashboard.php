@@ -10,10 +10,17 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
     exit;
 }
 
-// Fetch quizzes created by this teacher for the "My Quizzes" list
+// Fetch quizzes with performance stats (total attempts, avg score) - LEFT JOIN so zero-attempt quizzes show
 $my_quizzes = [];
 try {
-    $stmt = $pdo->prepare("SELECT id, topic, difficulty, created_at FROM quizzes WHERE created_by = ? ORDER BY created_at DESC");
+    $stmt = $pdo->prepare("SELECT q.id, q.topic, q.difficulty, q.created_at,
+                                  COUNT(a.id) AS total_attempts,
+                                  AVG(a.percentage) AS avg_score
+                           FROM quizzes q
+                           LEFT JOIN quiz_attempts a ON a.quiz_id = q.id
+                           WHERE q.created_by = ?
+                           GROUP BY q.id, q.topic, q.difficulty, q.created_at
+                           ORDER BY q.created_at DESC");
     $stmt->execute([(int)$_SESSION['user_id']]);
     $my_quizzes = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -124,10 +131,10 @@ try {
         </div>
     </section>
 
-    <!-- My Quizzes list -->
+    <!-- My Quizzes with performance stats -->
     <section class="page-section" id="my-quizzes">
         <div class="container px-4 px-lg-5">
-            <h2 class="text-center mt-0 mb-4">My Quizzes</h2>
+            <h2 class="text-center mt-0 mb-4">Quiz Performance</h2>
             <?php if (empty($my_quizzes)): ?>
                 <p class="text-muted text-center">You have not created any quizzes yet.</p>
             <?php else: ?>
@@ -137,6 +144,8 @@ try {
                             <tr>
                                 <th scope="col">Topic</th>
                                 <th scope="col">Difficulty</th>
+                                <th scope="col">Total Attempts</th>
+                                <th scope="col">Average Score</th>
                                 <th scope="col">Created</th>
                             </tr>
                         </thead>
@@ -145,6 +154,8 @@ try {
                                 <tr>
                                     <td><?php echo htmlspecialchars($quiz['topic']); ?></td>
                                     <td class="text-capitalize"><?php echo htmlspecialchars($quiz['difficulty']); ?></td>
+                                    <td><?php echo (int)$quiz['total_attempts']; ?></td>
+                                    <td><?php echo $quiz['total_attempts'] > 0 ? number_format((float)$quiz['avg_score'], 1) . '%' : '—'; ?></td>
                                     <td><?php echo htmlspecialchars($quiz['created_at']); ?></td>
                                 </tr>
                             <?php endforeach; ?>
