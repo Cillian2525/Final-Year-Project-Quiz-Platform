@@ -21,6 +21,29 @@ try {
 } catch (PDOException $e) {
     $available_quizzes = [];
 }
+
+// Real stats for logged-in student (prepared statements)
+$total_quizzes_taken = 0;
+$average_score = 0;
+$last_score = null;
+$user_id = (int)$_SESSION['user_id'];
+try {
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM quiz_attempts WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $total_quizzes_taken = (int)$stmt->fetchColumn();
+} catch (PDOException $e) {}
+try {
+    $stmt = $pdo->prepare("SELECT AVG(percentage) FROM quiz_attempts WHERE user_id = ?");
+    $stmt->execute([$user_id]);
+    $avg = $stmt->fetchColumn();
+    $average_score = $avg !== null ? round((float)$avg, 1) : 0;
+} catch (PDOException $e) {}
+try {
+    $stmt = $pdo->prepare("SELECT percentage FROM quiz_attempts WHERE user_id = ? ORDER BY attempt_date DESC LIMIT 1");
+    $stmt->execute([$user_id]);
+    $row = $stmt->fetch();
+    $last_score = $row ? (float)$row['percentage'] : null;
+} catch (PDOException $e) {}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -68,28 +91,28 @@ try {
         <div class="container px-4 px-lg-5">
             <div class="row gx-4 gx-lg-5">
 
-                <!-- Display available quiz count (placeholder - shows 0) -->
+                <!-- Total quizzes taken -->
                 <div class="col-lg-4 col-md-6 text-center">
                     <div class="mt-5">
                         <div class="mb-2"><i class="bi-journal-text fs-1 text-primary"></i></div>
-                        <h3 class="h4 mb-2 text-white">0</h3>
-                        <p class="text-white-75 mb-0">Available Quizzes</p>
+                        <h3 class="h4 mb-2 text-white"><?php echo $total_quizzes_taken; ?></h3>
+                        <p class="text-white-75 mb-0">Quizzes Taken</p>
                     </div>
                 </div>
-                <!-- Display completed quiz count (placeholder - shows 0) -->
-                <div class="col-lg-4 col-md-6 text-center">
-                    <div class="mt-5">
-                        <div class="mb-2"><i class="bi-check-circle fs-1 text-primary"></i></div>
-                        <h3 class="h4 mb-2 text-white">0</h3>
-                        <p class="text-white-75 mb-0">Completed</p>
-                    </div>
-                </div>
-                <!-- Display average score (placeholder - shows 0) -->
+                <!-- Average score -->
                 <div class="col-lg-4 col-md-6 text-center">
                     <div class="mt-5">
                         <div class="mb-2"><i class="bi-graph-up fs-1 text-primary"></i></div>
-                        <h3 class="h4 mb-2 text-white">0</h3>
+                        <h3 class="h4 mb-2 text-white"><?php echo $total_quizzes_taken > 0 ? $average_score . '%' : '0'; ?></h3>
                         <p class="text-white-75 mb-0">Average Score</p>
+                    </div>
+                </div>
+                <!-- Last score -->
+                <div class="col-lg-4 col-md-6 text-center">
+                    <div class="mt-5">
+                        <div class="mb-2"><i class="bi-check-circle fs-1 text-primary"></i></div>
+                        <h3 class="h4 mb-2 text-white"><?php echo $last_score !== null ? number_format($last_score, 1) . '%' : '—'; ?></h3>
+                        <p class="text-white-75 mb-0">Last Score</p>
                     </div>
                 </div>
             </div>
