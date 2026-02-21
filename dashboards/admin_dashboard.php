@@ -15,17 +15,17 @@ $studentCount = 0;
 $teacherCount = 0;
 $lockedCount = 0;
 $totalUsers = 0;
+$totalQuizzes = 0;
+$totalAttempts = 0;
 
-// Get statistics from database
+// Get statistics from database (real values)
 try {
-    // Count students
     $studentCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'student'")->fetchColumn();
-    // Count teachers
     $teacherCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'teacher'")->fetchColumn();
-    // Count locked accounts
     $lockedCount = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE status = 'locked'")->fetchColumn();
-    // Count total users
     $totalUsers = (int) $pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
+    $totalQuizzes = (int) $pdo->query("SELECT COUNT(*) FROM quizzes")->fetchColumn();
+    $totalAttempts = (int) $pdo->query("SELECT COUNT(*) FROM quiz_attempts")->fetchColumn();
 } catch (PDOException $e) {
     // If database query fails, counts stay at zero
 }
@@ -106,6 +106,22 @@ try {
                         <div class="mb-2"><i class="bi-people-fill fs-1 text-primary"></i></div>
                         <h3 class="h4 mb-2 text-white"><?php echo $totalUsers; ?></h3>
                         <p class="text-white-75 mb-0">Total Users</p>
+                    </div>
+                </div>
+                <!-- Display total quizzes -->
+                <div class="col-lg-3 col-md-6 text-center">
+                    <div class="mt-5">
+                        <div class="mb-2"><i class="bi-journal-text fs-1 text-primary"></i></div>
+                        <h3 class="h4 mb-2 text-white"><?php echo $totalQuizzes; ?></h3>
+                        <p class="text-white-75 mb-0">Total Quizzes</p>
+                    </div>
+                </div>
+                <!-- Display total attempts -->
+                <div class="col-lg-3 col-md-6 text-center">
+                    <div class="mt-5">
+                        <div class="mb-2"><i class="bi-clipboard-check fs-1 text-primary"></i></div>
+                        <h3 class="h4 mb-2 text-white"><?php echo $totalAttempts; ?></h3>
+                        <p class="text-white-75 mb-0">Total Attempts</p>
                     </div>
                 </div>
             </div>
