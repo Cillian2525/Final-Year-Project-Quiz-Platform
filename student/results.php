@@ -13,10 +13,10 @@ $attempts = [];
 try {
     $stmt = $pdo->prepare("SELECT a.id, COALESCE(q.topic, a.topic) AS topic, COALESCE(q.difficulty, a.difficulty) AS difficulty,
                                    a.score, a.total_questions, a.percentage, a.attempt_date
-                           FROM quiz_attempts a
-                           LEFT JOIN quizzes q ON a.quiz_id = q.id
-                           WHERE a.user_id = ?
-                           ORDER BY a.attempt_date DESC");
+                        FROM quiz_attempts a
+                        LEFT JOIN quizzes q ON a.quiz_id = q.id
+                        WHERE a.user_id = ?
+                        ORDER BY a.attempt_date DESC");
     $stmt->execute([(int)$_SESSION['user_id']]);
     $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
@@ -79,10 +79,10 @@ try {
                         <tbody>
                             <?php foreach ($attempts as $a): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($a['topic']); ?></td>
-                                    <td class="text-capitalize"><?php echo htmlspecialchars($a['difficulty']); ?></td>
+                                    <td><?php echo htmlspecialchars($a['topic'] ?? ''); ?></td>
+                                    <td class="text-capitalize"><?php echo htmlspecialchars($a['difficulty'] ?? ''); ?></td>
                                     <td><?php echo (int)$a['score']; ?> / <?php echo (int)$a['total_questions']; ?></td>
-                                    <td><?php echo number_format((float)$a['percentage'], 1); ?>%</td>
+                                    <td><?php echo number_format((float)($a['percentage'] ?? 0), 1); ?>%</td>
                                     <td><?php echo htmlspecialchars($a['attempt_date']); ?></td>
                                 </tr>
                             <?php endforeach; ?>

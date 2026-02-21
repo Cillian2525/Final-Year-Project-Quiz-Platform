@@ -14,13 +14,13 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
 $my_quizzes = [];
 try {
     $stmt = $pdo->prepare("SELECT q.id, q.topic, q.difficulty, q.created_at,
-                                  COUNT(a.id) AS total_attempts,
-                                  AVG(a.percentage) AS avg_score
-                           FROM quizzes q
-                           LEFT JOIN quiz_attempts a ON a.quiz_id = q.id
-                           WHERE q.created_by = ?
-                           GROUP BY q.id, q.topic, q.difficulty, q.created_at
-                           ORDER BY q.created_at DESC");
+                                COUNT(a.id) AS total_attempts,
+                                AVG(a.percentage) AS avg_score
+                        FROM quizzes q
+                        LEFT JOIN quiz_attempts a ON a.quiz_id = q.id
+                        WHERE q.created_by = ?
+                        GROUP BY q.id, q.topic, q.difficulty, q.created_at
+                        ORDER BY q.created_at DESC");
     $stmt->execute([(int)$_SESSION['user_id']]);
     $my_quizzes = $stmt->fetchAll();
 } catch (PDOException $e) {
@@ -152,11 +152,11 @@ try {
                         <tbody>
                             <?php foreach ($my_quizzes as $quiz): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($quiz['topic']); ?></td>
-                                    <td class="text-capitalize"><?php echo htmlspecialchars($quiz['difficulty']); ?></td>
-                                    <td><?php echo (int)$quiz['total_attempts']; ?></td>
-                                    <td><?php echo $quiz['total_attempts'] > 0 ? number_format((float)$quiz['avg_score'], 1) . '%' : '—'; ?></td>
-                                    <td><?php echo htmlspecialchars($quiz['created_at']); ?></td>
+                                    <td><?php echo htmlspecialchars($quiz['topic'] ?? ''); ?></td>
+                                    <td class="text-capitalize"><?php echo htmlspecialchars($quiz['difficulty'] ?? ''); ?></td>
+                                    <td><?php echo (int)($quiz['total_attempts'] ?? 0); ?></td>
+                                    <td><?php echo ((int)($quiz['total_attempts'] ?? 0)) > 0 ? number_format((float)($quiz['avg_score'] ?? 0), 1) . '%' : '—'; ?></td>
+                                    <td><?php echo htmlspecialchars($quiz['created_at'] ?? ''); ?></td>
                                 </tr>
                             <?php endforeach; ?>
                         </tbody>
