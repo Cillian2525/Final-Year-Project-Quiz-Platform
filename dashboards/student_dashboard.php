@@ -137,26 +137,27 @@ try {
     <!-- Quick action cards section -->
     <section class="page-section" id="actions">
         <div class="container px-4 px-lg-5">
+            <h2 class="text-center mt-0 mb-4">Quick Actions</h2>
             <div class="row gx-4 gx-lg-5">
                 <!-- Take Quiz card -->
                 <div class="col-lg-6 col-md-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-body text-center">
+                        <div class="card-body d-flex flex-column text-center">
                             <i class="bi-book fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Take Quiz</h4>
                             <p class="card-text text-muted">Browse available quizzes</p>
-                            <a href="#available-quizzes" class="btn btn-primary">Browse quizzes</a>
+                            <a href="#available-quizzes" class="btn btn-primary mt-3">Browse quizzes</a>
                         </div>
                     </div>
                 </div>
                 <!-- View Results card -->
                 <div class="col-lg-6 col-md-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-body text-center">
+                        <div class="card-body d-flex flex-column text-center">
                             <i class="bi-bar-chart fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">View Results</h4>
                             <p class="card-text text-muted">Check your progress</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resultsModal">
+                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#resultsModal">
                                 My results
                             </button>
                         </div>

@@ -131,26 +131,27 @@ try {
     <!-- Quick action cards section -->
     <section class="page-section" id="actions">
         <div class="container px-4 px-lg-5">
+            <h2 class="text-center mt-0 mb-4">Quick Actions</h2>
             <div class="row gx-4 gx-lg-5">
                 <!-- Manage Users card -->
                 <div class="col-lg-6 col-md-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-body text-center">
+                        <div class="card-body d-flex flex-column text-center">
                             <i class="bi-people-fill fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Manage Users</h4>
                             <p class="card-text text-muted">Review and manage user accounts</p>
-                            <a href="#" class="btn btn-primary">Go to users</a>
+                            <a href="#" class="btn btn-primary mt-3">Go to users</a>
                         </div>
                     </div>
                 </div>
                 <!-- Manage Quizzes card -->
                 <div class="col-lg-6 col-md-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-body text-center">
+                        <div class="card-body d-flex flex-column text-center">
                             <i class="bi-journal-text fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Manage Quizzes</h4>
                             <p class="card-text text-muted">Create and manage quizzes</p>
-                            <a href="#" class="btn btn-primary">Go to quizzes</a>
+                            <a href="#" class="btn btn-primary mt-3">Go to quizzes</a>
                         </div>
                     </div>
                 </div>

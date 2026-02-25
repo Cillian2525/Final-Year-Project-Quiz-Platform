@@ -123,15 +123,16 @@ try {
                     <?php echo $quiz_create_success; ?>
                 </div>
             <?php endif; ?>
+            <h2 class="text-center mt-0 mb-4">Quick Actions</h2>
             <div class="row gx-4 gx-lg-5">
                 <!-- Create Quiz card -->
                 <div class="col-lg-6 col-md-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-body text-center">
+                        <div class="card-body d-flex flex-column text-center">
                             <i class="bi-plus-circle fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Create Quiz</h4>
                             <p class="card-text text-muted">Start a new quiz and share it with your students</p>
-                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createQuizModal">
+                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#createQuizModal">
                                 Create quiz
                             </button>
                         </div>
@@ -140,11 +141,11 @@ try {
                 <!-- Manage Quizzes card -->
                 <div class="col-lg-6 col-md-6 mb-4">
                     <div class="card h-100">
-                        <div class="card-body text-center">
+                        <div class="card-body d-flex flex-column text-center">
                             <i class="bi-list-ul fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Manage Quizzes</h4>
                             <p class="card-text text-muted">View and edit quizzes</p>
-                            <a href="#" class="btn btn-primary">View quizzes</a>
+                            <a href="#" class="btn btn-primary mt-3">View quizzes</a>
                         </div>
                     </div>
                 </div>
