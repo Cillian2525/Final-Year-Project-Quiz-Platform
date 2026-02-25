@@ -10,6 +10,20 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'teacher') {
     exit;
 }
 
+// Flash messages from create_quiz flow
+$quiz_create_success = $_SESSION['quiz_create_success'] ?? '';
+$quiz_create_error = $_SESSION['quiz_create_error'] ?? '';
+unset($_SESSION['quiz_create_success'], $_SESSION['quiz_create_error']);
+
+// Fetch distinct topics for Create Quiz modal dropdown
+$topics = [];
+try {
+    $topicStmt = $pdo->query("SELECT DISTINCT topic FROM questions ORDER BY topic");
+    $topics = $topicStmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (PDOException $e) {
+    $topics = [];
+}
+
 // Fetch quizzes with performance stats (total attempts, avg score) - LEFT JOIN so zero-attempt quizzes show
 $my_quizzes = [];
 try {
@@ -104,6 +118,11 @@ try {
     <!-- Quick action cards section -->
     <section class="page-section" id="actions">
         <div class="container px-4 px-lg-5">
+            <?php if (!empty($quiz_create_success)): ?>
+                <div class="alert alert-success mb-4" role="alert">
+                    <?php echo $quiz_create_success; ?>
+                </div>
+            <?php endif; ?>
             <div class="row gx-4 gx-lg-5">
                 <!-- Create Quiz card -->
                 <div class="col-lg-6 col-md-6 mb-4">
@@ -112,7 +131,9 @@ try {
                             <i class="bi-plus-circle fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Create Quiz</h4>
                             <p class="card-text text-muted">Start a new quiz and share it with your students</p>
-                            <a href="../teacher/create_quiz.php" class="btn btn-primary">Create quiz</a>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createQuizModal">
+                                Create quiz
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -130,6 +151,49 @@ try {
             </div>
         </div>
     </section>
+
+    <!-- Create Quiz modal -->
+    <div class="modal fade" id="createQuizModal" tabindex="-1" aria-labelledby="createQuizModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createQuizModalLabel">Create Quiz</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <?php if (!empty($quiz_create_error)): ?>
+                        <div class="alert alert-danger mb-3" role="alert">
+                            <?php echo htmlspecialchars($quiz_create_error); ?>
+                        </div>
+                    <?php endif; ?>
+                    <form method="post" action="../teacher/create_quiz.php">
+                        <div class="mb-3">
+                            <label for="topic" class="form-label">Topic</label>
+                            <select class="form-select" id="topic" name="topic" required>
+                                <option value="">-- Select topic --</option>
+                                <?php foreach ($topics as $t): ?>
+                                    <option value="<?php echo htmlspecialchars($t); ?>"><?php echo htmlspecialchars($t); ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="difficulty" class="form-label">Difficulty</label>
+                            <select class="form-select" id="difficulty" name="difficulty" required>
+                                <option value="">-- Select difficulty --</option>
+                                <option value="easy">Easy</option>
+                                <option value="medium">Medium</option>
+                                <option value="hard">Hard</option>
+                            </select>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Create quiz</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- My Quizzes with performance stats -->
     <section class="page-section" id="my-quizzes">

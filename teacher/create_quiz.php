@@ -27,6 +27,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $error_message = "Invalid topic or difficulty selected.";
     }
+
+    // Redirect back to teacher dashboard with flash message so modal can close
+    if (!empty($success_message)) {
+        $_SESSION['quiz_create_success'] = $success_message;
+    } elseif (!empty($error_message)) {
+        $_SESSION['quiz_create_error'] = $error_message;
+    }
+    header('Location: ../dashboards/teacher_dashboard.php');
+    exit;
 }
 
 // Load distinct topics from questions table for dropdown
