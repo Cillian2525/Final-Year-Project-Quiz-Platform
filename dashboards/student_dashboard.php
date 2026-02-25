@@ -44,6 +44,21 @@ try {
     $row = $stmt->fetch();
     $last_score = $row ? (float)$row['percentage'] : null;
 } catch (PDOException $e) {}
+
+// Load results history for modal (same logic as results page)
+$attempts = [];
+try {
+    $stmt = $pdo->prepare("SELECT a.id, COALESCE(q.topic, a.topic) AS topic, COALESCE(q.difficulty, a.difficulty) AS difficulty,
+                                a.score, a.total_questions, a.percentage, a.attempt_date
+                        FROM quiz_attempts a
+                        LEFT JOIN quizzes q ON a.quiz_id = q.id
+                        WHERE a.user_id = ?
+                        ORDER BY a.attempt_date DESC");
+    $stmt->execute([$user_id]);
+    $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $attempts = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -141,7 +156,9 @@ try {
                             <i class="bi-bar-chart fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">View Results</h4>
                             <p class="card-text text-muted">Check your progress</p>
-                            <a href="../student/results.php" class="btn btn-primary">My results</a>
+                            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#resultsModal">
+                                My results
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -187,6 +204,48 @@ try {
             <?php endif; ?>
         </div>
     </section>
+
+    <!-- Results history modal -->
+    <div class="modal fade" id="resultsModal" tabindex="-1" aria-labelledby="resultsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="resultsModalLabel">My Results</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <?php if (empty($attempts)): ?>
+                        <p class="text-muted text-center mb-0">You have not taken any quizzes yet.</p>
+                    <?php else: ?>
+                        <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Topic</th>
+                                        <th scope="col">Difficulty</th>
+                                        <th scope="col">Score</th>
+                                        <th scope="col">Percentage</th>
+                                        <th scope="col">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($attempts as $a): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($a['topic'] ?? ''); ?></td>
+                                            <td class="text-capitalize"><?php echo htmlspecialchars($a['difficulty'] ?? ''); ?></td>
+                                            <td><?php echo (int)$a['score']; ?> / <?php echo (int)$a['total_questions']; ?></td>
+                                            <td><?php echo number_format((float)($a['percentage'] ?? 0), 1); ?>%</td>
+                                            <td><?php echo htmlspecialchars($a['attempt_date']); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Load Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
