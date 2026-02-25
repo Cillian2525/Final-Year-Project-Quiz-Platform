@@ -174,8 +174,8 @@ try {
             <?php if (empty($available_quizzes)): ?>
                 <p class="text-muted text-center">No quizzes are available yet. Please check back later.</p>
             <?php else: ?>
-                <div class="table-responsive">
-                    <table class="table table-striped align-middle">
+                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                    <table class="table table-striped align-middle mb-0">
                         <thead>
                             <tr>
                                 <th scope="col">Topic</th>

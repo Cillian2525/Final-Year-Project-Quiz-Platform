@@ -12,7 +12,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
 $attempts = [];
 try {
     $stmt = $pdo->prepare("SELECT a.id, COALESCE(q.topic, a.topic) AS topic, COALESCE(q.difficulty, a.difficulty) AS difficulty,
-                                   a.score, a.total_questions, a.percentage, a.attempt_date
+                                a.score, a.total_questions, a.percentage, a.attempt_date
                         FROM quiz_attempts a
                         LEFT JOIN quizzes q ON a.quiz_id = q.id
                         WHERE a.user_id = ?
@@ -65,8 +65,8 @@ try {
                     <a href="../dashboards/student_dashboard.php#available-quizzes" class="btn btn-primary">Browse quizzes</a>
                 </div>
             <?php else: ?>
-                <div class="table-responsive">
-                    <table class="table table-striped align-middle">
+                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                    <table class="table table-striped align-middle mb-0">
                         <thead>
                             <tr>
                                 <th scope="col">Topic</th>

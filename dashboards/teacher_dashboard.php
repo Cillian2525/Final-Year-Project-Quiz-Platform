@@ -203,8 +203,8 @@ try {
             <?php if (empty($my_quizzes)): ?>
                 <p class="text-muted text-center">You have not created any quizzes yet.</p>
             <?php else: ?>
-                <div class="table-responsive">
-                    <table class="table table-striped align-middle">
+                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                    <table class="table table-striped align-middle mb-0">
                         <thead>
                             <tr>
                                 <th scope="col">Topic</th>
