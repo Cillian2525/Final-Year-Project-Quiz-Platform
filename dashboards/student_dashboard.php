@@ -146,7 +146,9 @@ try {
                             <i class="bi-book fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Take Quiz</h4>
                             <p class="card-text text-muted">Browse available quizzes</p>
-                            <a href="#available-quizzes" class="btn btn-primary mt-3">Browse quizzes</a>
+                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#availableQuizzesModal">
+                                Browse quizzes
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -167,44 +169,51 @@ try {
         </div>
     </section>
 
-    <!-- Available quizzes for students -->
-    <section class="page-section" id="available-quizzes">
-        <div class="container px-4 px-lg-5">
-            <h2 class="text-center mt-0 mb-4">Available Quizzes</h2>
-            <?php if (empty($available_quizzes)): ?>
-                <p class="text-muted text-center">No quizzes are available yet. Please check back later.</p>
-            <?php else: ?>
-                <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
-                    <table class="table table-striped align-middle mb-0">
-                        <thead>
-                            <tr>
-                                <th scope="col">Topic</th>
-                                <th scope="col">Difficulty</th>
-                                <th scope="col">Teacher</th>
-                                <th scope="col">Created</th>
-                                <th scope="col">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php foreach ($available_quizzes as $quiz): ?>
-                                <tr>
-                                    <td><?php echo htmlspecialchars($quiz['topic']); ?></td>
-                                    <td class="text-capitalize"><?php echo htmlspecialchars($quiz['difficulty']); ?></td>
-                                    <td><?php echo htmlspecialchars($quiz['teacher_name']); ?></td>
-                                    <td><?php echo htmlspecialchars($quiz['created_at']); ?></td>
-                                    <td>
-                                        <a href="../student/quiz.php?quiz_id=<?php echo (int)$quiz['id']; ?>" class="btn btn-sm btn-primary">
-                                            Start Quiz
-                                        </a>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
+    <!-- Available quizzes modal -->
+    <div class="modal fade" id="availableQuizzesModal" tabindex="-1" aria-labelledby="availableQuizzesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="availableQuizzesModalLabel">Available Quizzes</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-            <?php endif; ?>
+                <div class="modal-body">
+                    <?php if (empty($available_quizzes)): ?>
+                        <p class="text-muted text-center mb-0">No quizzes are available yet. Please check back later.</p>
+                    <?php else: ?>
+                        <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Topic</th>
+                                        <th scope="col">Difficulty</th>
+                                        <th scope="col">Teacher</th>
+                                        <th scope="col">Created</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($available_quizzes as $quiz): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($quiz['topic']); ?></td>
+                                            <td class="text-capitalize"><?php echo htmlspecialchars($quiz['difficulty']); ?></td>
+                                            <td><?php echo htmlspecialchars($quiz['teacher_name']); ?></td>
+                                            <td><?php echo htmlspecialchars($quiz['created_at']); ?></td>
+                                            <td>
+                                                <a href="../student/quiz.php?quiz_id=<?php echo (int)$quiz['id']; ?>" class="btn btn-sm btn-primary">
+                                                    Start Quiz
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
         </div>
-    </section>
+    </div>
 
     <!-- Results history modal -->
     <div class="modal fade" id="resultsModal" tabindex="-1" aria-labelledby="resultsModalLabel" aria-hidden="true">
