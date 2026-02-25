@@ -167,7 +167,7 @@ try {
                             <?php echo htmlspecialchars($quiz_create_error); ?>
                         </div>
                     <?php endif; ?>
-                    <form method="post" action="../teacher/create_quiz.php">
+                    <form method="post" action="../teacher/create_quiz.php" id="createQuizForm">
                         <div class="mb-3">
                             <label for="topic" class="form-label">Topic</label>
                             <select class="form-select" id="topic" name="topic" required>
@@ -188,7 +188,7 @@ try {
                         </div>
                         <div class="d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn btn-primary">Create quiz</button>
+                            <button type="submit" class="btn btn-primary" id="createQuizSubmitBtn">Create quiz</button>
                         </div>
                     </form>
                 </div>
@@ -235,6 +235,18 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Load Creative theme JavaScript -->
     <script src="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/js/scripts.js"></script>
+    <script>
+        (function () {
+            const form = document.getElementById('createQuizForm');
+            const submitBtn = document.getElementById('createQuizSubmitBtn');
+            if (form && submitBtn) {
+                form.addEventListener('submit', function () {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Creating...';
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
 

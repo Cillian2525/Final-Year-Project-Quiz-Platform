@@ -129,18 +129,26 @@ if (!$show_result) {
             <?php if ($show_result): ?>
                 <div class="card mx-auto" style="max-width: 28rem;">
                     <div class="card-body text-center py-5">
+                        <?php if ($save_ok): ?>
+                            <div class="alert alert-success mb-4" role="alert">
+                                Your attempt has been recorded.
+                            </div>
+                        <?php else: ?>
+                            <div class="alert alert-warning mb-4" role="alert">
+                                Your result could not be saved, but here is your score.
+                            </div>
+                        <?php endif; ?>
                         <h4 class="card-title mb-3">Quiz complete</h4>
                         <p class="mb-1">You scored <strong><?php echo (int)$score; ?></strong> out of <strong><?php echo (int)$total_questions; ?></strong>.</p>
                         <p class="mb-2">Percentage: <strong><?php echo number_format($percentage, 1); ?>%</strong></p>
-                        <p class="text-muted small mb-3"><?php echo $save_ok ? 'Your attempt has been recorded.' : 'Your result could not be saved.'; ?></p>
-                        <a href="../dashboards/student_dashboard.php" class="btn btn-primary">Back to dashboard</a>
+                        <a href="../dashboards/student_dashboard.php" class="btn btn-primary mt-3">Back to dashboard</a>
                     </div>
                 </div>
             <?php elseif (!empty($error_message)): ?>
                 <div class="alert alert-warning"><?php echo htmlspecialchars($error_message); ?></div>
                 <a href="../dashboards/student_dashboard.php" class="btn btn-primary">Back to dashboard</a>
             <?php else: ?>
-                <form method="post" action="quiz.php">
+                <form method="post" action="quiz.php" id="quizForm">
                     <input type="hidden" name="quiz_id" value="<?php echo (int)$quiz_id; ?>">
                     <?php foreach ($questions as $i => $q): ?>
                         <div class="card mb-4">
@@ -166,12 +174,26 @@ if (!$show_result) {
                             </div>
                         </div>
                     <?php endforeach; ?>
-                    <button type="submit" class="btn btn-primary">Submit quiz</button>
+                    <button type="submit" class="btn btn-primary" id="quizSubmitBtn">
+                        Submit quiz
+                    </button>
                 </form>
             <?php endif; ?>
         </div>
     </section>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/js/scripts.js"></script>
+    <script>
+        (function () {
+            const form = document.getElementById('quizForm');
+            const submitBtn = document.getElementById('quizSubmitBtn');
+            if (form && submitBtn) {
+                form.addEventListener('submit', function () {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Submitting...';
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
