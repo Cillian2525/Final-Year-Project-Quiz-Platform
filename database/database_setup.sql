@@ -54,6 +54,26 @@ CREATE TABLE IF NOT EXISTS quiz_attempts (
     FOREIGN KEY (quiz_id) REFERENCES quizzes(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Generated questions (LLM-based adaptive MCQs)
+CREATE TABLE IF NOT EXISTS generated_questions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    topic VARCHAR(100) NOT NULL,
+    difficulty ENUM('easy', 'medium', 'hard') NOT NULL,
+    question_text TEXT NOT NULL,
+    option_a VARCHAR(255) NOT NULL,
+    option_b VARCHAR(255) NOT NULL,
+    option_c VARCHAR(255) NOT NULL,
+    option_d VARCHAR(255) NOT NULL,
+    correct_answer ENUM('A', 'B', 'C', 'D') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    attempt_id INT DEFAULT NULL,
+    INDEX idx_generated_questions_user_id (user_id),
+    INDEX idx_generated_questions_attempt_id (attempt_id),
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (attempt_id) REFERENCES quiz_attempts(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Quizzes table (persistent quizzes created by teachers)
 CREATE TABLE IF NOT EXISTS quizzes (
     id INT AUTO_INCREMENT PRIMARY KEY,
