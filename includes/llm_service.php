@@ -27,16 +27,41 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
         return [];
     }
 
+    $averageScore = isset($performanceSummary['average_score']) ? (float)$performanceSummary['average_score'] : null;
+    $lastScore    = isset($performanceSummary['last_score']) ? (float)$performanceSummary['last_score'] : null;
+
     $systemPrompt = 'You are an educational quiz question generator. '
         . 'You must respond with JSON only, no explanations or extra text.';
 
     // Basic prompt for now; will be refined in later sections.
-    $userPrompt = json_encode([
-        'instruction' => 'Generate adaptive multiple choice questions in strict JSON format.',
-        'topic' => $topic,
-        'difficulty' => $difficulty,
-        'performance_summary' => $performanceSummary,
-    ], JSON_UNESCAPED_UNICODE);
+    $userPrompt = "Generate exactly 5 multiple choice questions for a quiz.\n"
+        . "Topic: {$topic}\n"
+        . "Difficulty level: {$difficulty}\n";
+
+    if ($averageScore !== null) {
+        $userPrompt .= "Student average score: {$averageScore}%\n";
+    }
+    if ($lastScore !== null) {
+        $userPrompt .= "Student last score: {$lastScore}%\n";
+    }
+
+    $userPrompt .= "\nEach question must:\n"
+        . "- be a single clear stem\n"
+        . "- have four options: option_a, option_b, option_c, option_d\n"
+        . "- have correct_answer as one of 'A', 'B', 'C', or 'D'\n\n"
+        . "Respond in STRICT JSON only, no prose, using this schema:\n"
+        . "{\n"
+        . "  \"questions\": [\n"
+        . "    {\n"
+        . "      \"question\": \"\",\n"
+        . "      \"option_a\": \"\",\n"
+        . "      \"option_b\": \"\",\n"
+        . "      \"option_c\": \"\",\n"
+        . "      \"option_d\": \"\",\n"
+        . "      \"correct_answer\": \"A\"\n"
+        . "    }\n"
+        . "  ]\n"
+        . "}\n";
 
     $payload = [
         'model' => LLM_MODEL,
@@ -88,8 +113,38 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
         return [];
     }
 
-    // At this stage we simply return whatever JSON structure we got.
-    return $json;
+    // Validate expected structure: questions array with exactly 5 items
+    if (!isset($json['questions']) || !is_array($json['questions']) || count($json['questions']) !== 5) {
+        return [];
+    }
+
+    $validAnswers = ['A', 'B', 'C', 'D'];
+    $cleanQuestions = [];
+
+    foreach ($json['questions'] as $q) {
+        if (
+            !is_array($q) ||
+            !isset($q['question'], $q['option_a'], $q['option_b'], $q['option_c'], $q['option_d'], $q['correct_answer'])
+        ) {
+            return [];
+        }
+
+        $answer = strtoupper(trim((string)$q['correct_answer']));
+        if (!in_array($answer, $validAnswers, true)) {
+            return [];
+        }
+
+        $cleanQuestions[] = [
+            'question' => (string)$q['question'],
+            'option_a' => (string)$q['option_a'],
+            'option_b' => (string)$q['option_b'],
+            'option_c' => (string)$q['option_c'],
+            'option_d' => (string)$q['option_d'],
+            'correct_answer' => $answer,
+        ];
+    }
+
+    return $cleanQuestions;
 }
 
 // Optional: simple manual test hook (not used in normal flow)
