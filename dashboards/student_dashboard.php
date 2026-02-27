@@ -3,12 +3,16 @@
 session_start();
 // Load database connection
 require '../includes/db_connect.php';
+require_once '../includes/llm_service.php';
 
 // Security check: Only allow student users to access this page
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header('Location: ../auth/login.php');
     exit;
 }
+
+// Current logged-in student id
+$user_id = (int)$_SESSION['user_id'];
 
 // Load all available quizzes for students to browse
 $available_quizzes = [];
@@ -26,7 +30,6 @@ try {
 $total_quizzes_taken = 0;
 $average_score = 0;
 $last_score = null;
-$user_id = (int)$_SESSION['user_id'];
 try {
     $stmt = $pdo->prepare("SELECT COUNT(*) FROM quiz_attempts WHERE user_id = ?");
     $stmt->execute([$user_id]);
@@ -58,6 +61,86 @@ try {
     $attempts = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $attempts = [];
+}
+
+// Handle starting an adaptive quiz
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz'])) {
+    $performanceSummary = [
+        'average_score' => $average_score,
+        'last_score' => $last_score,
+    ];
+
+    // Determine topic and difficulty: use last attempted quiz if available, otherwise fall back to first topic
+    $adaptiveTopic = null;
+    $adaptiveDifficulty = null;
+    try {
+        $stmt = $pdo->prepare("SELECT topic, difficulty FROM quiz_attempts WHERE user_id = ? ORDER BY attempt_date DESC LIMIT 1");
+        $stmt->execute([$user_id]);
+        $row = $stmt->fetch();
+        if ($row) {
+            $adaptiveTopic = $row['topic'];
+            $adaptiveDifficulty = $row['difficulty'];
+        }
+    } catch (PDOException $e) {}
+
+    if ($adaptiveTopic === null || $adaptiveDifficulty === null) {
+        try {
+            $stmt = $pdo->query("SELECT topic, difficulty FROM questions ORDER BY topic, difficulty LIMIT 1");
+            $fallback = $stmt->fetch();
+            if ($fallback) {
+                $adaptiveTopic = $fallback['topic'];
+                $adaptiveDifficulty = $fallback['difficulty'];
+            }
+        } catch (PDOException $e) {}
+    }
+
+    if ($adaptiveTopic === null || $adaptiveDifficulty === null) {
+        header('Location: student_dashboard.php');
+        exit;
+    }
+
+    $generated = generateAdaptiveQuestions($adaptiveTopic, $adaptiveDifficulty, $performanceSummary);
+    if (empty($generated)) {
+        header('Location: student_dashboard.php');
+        exit;
+    }
+
+    $questionIds = [];
+    try {
+        $insert = $pdo->prepare(
+            "INSERT INTO generated_questions (user_id, topic, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+        );
+        foreach ($generated as $q) {
+            $insert->execute([
+                $user_id,
+                $adaptiveTopic,
+                $adaptiveDifficulty,
+                $q['question'],
+                $q['option_a'],
+                $q['option_b'],
+                $q['option_c'],
+                $q['option_d'],
+                $q['correct_answer'],
+            ]);
+            $questionIds[] = (int)$pdo->lastInsertId();
+        }
+    } catch (PDOException $e) {
+        header('Location: student_dashboard.php');
+        exit;
+    }
+
+    if (empty($questionIds)) {
+        header('Location: student_dashboard.php');
+        exit;
+    }
+
+    $_SESSION['adaptive_question_ids'] = $questionIds;
+    $_SESSION['adaptive_topic'] = $adaptiveTopic;
+    $_SESSION['adaptive_difficulty'] = $adaptiveDifficulty;
+
+    header('Location: ../student/adaptive_quiz.php');
+    exit;
 }
 ?>
 <!DOCTYPE html>
@@ -162,6 +245,20 @@ try {
                             <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#resultsModal">
                                 My results
                             </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Adaptive Quiz card -->
+                <div class="col-lg-12 col-md-12 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body d-flex flex-column text-center">
+                            <i class="bi-stars fs-1 text-primary mb-3"></i>
+                            <h4 class="card-title">Adaptive Quiz</h4>
+                            <p class="card-text text-muted">Get a personalised quiz based on your performance</p>
+                            <form method="post" class="mt-3">
+                                <input type="hidden" name="start_adaptive_quiz" value="1">
+                                <button type="submit" class="btn btn-primary">Take Adaptive Quiz</button>
+                            </form>
                         </div>
                     </div>
                 </div>
