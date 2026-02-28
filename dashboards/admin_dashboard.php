@@ -29,6 +29,73 @@ try {
 } catch (PDOException $e) {
     // If database query fails, counts stay at zero
 }
+
+// Handle lock/unlock from Manage Users modal (POST then redirect to avoid resubmit)
+$usersModalMessage = '';
+$usersModalMessageType = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['user_id'], $_POST['action'])) {
+    $targetId = (int) $_POST['user_id'];
+    $action = $_POST['action'] === 'lock' ? 'locked' : 'active';
+    $currentAdminId = (int) $_SESSION['user_id'];
+
+    if ($targetId === $currentAdminId) {
+        $usersModalMessage = 'You cannot lock or unlock your own account.';
+        $usersModalMessageType = 'warning';
+    } else {
+        try {
+            if ($action === 'locked') {
+                $stmt = $pdo->prepare("SELECT role FROM users WHERE id = ?");
+                $stmt->execute([$targetId]);
+                $target = $stmt->fetch();
+                if ($target && $target['role'] === 'admin') {
+                    $count = (int) $pdo->query("SELECT COUNT(*) FROM users WHERE role = 'admin' AND status = 'active'")->fetchColumn();
+                    if ($count <= 1) {
+                        $usersModalMessage = 'Cannot lock the last active admin.';
+                        $usersModalMessageType = 'warning';
+                    } else {
+                        $stmt = $pdo->prepare("UPDATE users SET status = 'locked' WHERE id = ?");
+                        $stmt->execute([$targetId]);
+                        $usersModalMessage = 'User locked.';
+                        $usersModalMessageType = 'success';
+                    }
+                } else {
+                    $stmt = $pdo->prepare("UPDATE users SET status = 'locked' WHERE id = ?");
+                    $stmt->execute([$targetId]);
+                    $usersModalMessage = 'User locked.';
+                    $usersModalMessageType = 'success';
+                }
+            } else {
+                $stmt = $pdo->prepare("UPDATE users SET status = 'active' WHERE id = ?");
+                $stmt->execute([$targetId]);
+                $usersModalMessage = 'User unlocked.';
+                $usersModalMessageType = 'success';
+            }
+        } catch (PDOException $e) {
+            $usersModalMessage = 'Update failed. Please try again.';
+            $usersModalMessageType = 'danger';
+        }
+    }
+    $_SESSION['admin_users_modal_msg'] = $usersModalMessage;
+    $_SESSION['admin_users_modal_type'] = $usersModalMessageType;
+    header('Location: admin_dashboard.php?open_users=1');
+    exit;
+}
+
+// Flash message for users modal (after redirect)
+if (isset($_SESSION['admin_users_modal_msg'])) {
+    $usersModalMessage = $_SESSION['admin_users_modal_msg'];
+    $usersModalMessageType = $_SESSION['admin_users_modal_type'] ?? 'info';
+    unset($_SESSION['admin_users_modal_msg'], $_SESSION['admin_users_modal_type']);
+}
+
+// Fetch all users for Manage Users modal
+$adminUsersList = [];
+try {
+    $stmt = $pdo->query("SELECT id, username, email, role, status, created_at FROM users ORDER BY role, username");
+    $adminUsersList = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    $adminUsersList = [];
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -140,7 +207,7 @@ try {
                             <i class="bi-people-fill fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Manage Users</h4>
                             <p class="card-text text-muted">Review and manage user accounts</p>
-                            <a href="#" class="btn btn-primary mt-3">Go to users</a>
+                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#usersModal">Go to users</button>
                         </div>
                     </div>
                 </div>
@@ -159,10 +226,91 @@ try {
         </div>
     </section>
 
+    <!-- Manage Users modal -->
+    <div class="modal fade" id="usersModal" tabindex="-1" aria-labelledby="usersModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="usersModalLabel">Manage Users</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <?php if ($usersModalMessage): ?>
+                        <div class="alert alert-<?php echo $usersModalMessageType === 'success' ? 'success' : ($usersModalMessageType === 'warning' ? 'warning' : 'danger'); ?> mb-3" role="alert">
+                            <?php echo htmlspecialchars($usersModalMessage); ?>
+                        </div>
+                    <?php endif; ?>
+                    <?php if (empty($adminUsersList)): ?>
+                        <p class="text-muted mb-0">No users found.</p>
+                    <?php else: ?>
+                        <div class="table-responsive" style="max-height: 60vh; overflow-y: auto;">
+                            <table class="table table-striped align-middle mb-0">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Username</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Role</th>
+                                        <th scope="col">Status</th>
+                                        <th scope="col">Created</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($adminUsersList as $u): ?>
+                                        <tr>
+                                            <td><?php echo htmlspecialchars($u['username']); ?></td>
+                                            <td><?php echo htmlspecialchars($u['email']); ?></td>
+                                            <td class="text-capitalize"><?php echo htmlspecialchars($u['role']); ?></td>
+                                            <td>
+                                                <span class="badge bg-<?php echo $u['status'] === 'active' ? 'success' : 'secondary'; ?>">
+                                                    <?php echo htmlspecialchars($u['status']); ?>
+                                                </span>
+                                            </td>
+                                            <td><?php echo htmlspecialchars($u['created_at']); ?></td>
+                                            <td>
+                                                <?php if ((int)$u['id'] === (int)$_SESSION['user_id']): ?>
+                                                    <span class="text-muted small">(you)</span>
+                                                <?php elseif ($u['status'] === 'active'): ?>
+                                                    <form method="post" class="d-inline" onsubmit="return confirm('Lock this user? They will not be able to log in.');">
+                                                        <input type="hidden" name="user_id" value="<?php echo (int)$u['id']; ?>">
+                                                        <input type="hidden" name="action" value="lock">
+                                                        <button type="submit" class="btn btn-sm btn-warning">Lock</button>
+                                                    </form>
+                                                <?php else: ?>
+                                                    <form method="post" class="d-inline">
+                                                        <input type="hidden" name="user_id" value="<?php echo (int)$u['id']; ?>">
+                                                        <input type="hidden" name="action" value="unlock">
+                                                        <button type="submit" class="btn btn-sm btn-success">Unlock</button>
+                                                    </form>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Load Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Load Creative theme JavaScript -->
     <script src="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/js/scripts.js"></script>
+    <script>
+        (function() {
+            if (window.location.search.indexOf('open_users=1') !== -1) {
+                var modal = document.getElementById('usersModal');
+                if (modal) {
+                    var m = new bootstrap.Modal(modal);
+                    m.show();
+                    history.replaceState({}, '', 'admin_dashboard.php');
+                }
+            }
+        })();
+    </script>
 </body>
 </html>
 
