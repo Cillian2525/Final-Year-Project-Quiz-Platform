@@ -63,8 +63,18 @@ try {
     $attempts = [];
 }
 
+// Flash message for adaptive fallback
+$adaptive_fallback_msg = $_SESSION['adaptive_fallback_msg'] ?? '';
+unset($_SESSION['adaptive_fallback_msg']);
+
 // Handle starting an adaptive quiz
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz'])) {
+    // Prevent duplicate generation on refresh: if we already have pending adaptive questions, redirect to quiz
+    if (!empty($_SESSION['adaptive_question_ids']) && count($_SESSION['adaptive_question_ids']) === 5) {
+        header('Location: ../student/adaptive_quiz.php');
+        exit;
+    }
+
     $performanceSummary = [
         'average_score' => $average_score,
         'last_score' => $last_score,
@@ -100,16 +110,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
     }
 
     $generated = generateAdaptiveQuestions($adaptiveTopic, $adaptiveDifficulty, $performanceSummary);
+
+    // API failed: fallback to static quiz if one exists for this topic/difficulty
     if (empty($generated)) {
+        try {
+            $stmt = $pdo->prepare("SELECT id FROM quizzes WHERE topic = ? AND difficulty = ? AND topic != 'Adaptive' ORDER BY created_at DESC LIMIT 1");
+            $stmt->execute([$adaptiveTopic, $adaptiveDifficulty]);
+            $staticQuiz = $stmt->fetch();
+            if ($staticQuiz) {
+                header('Location: ../student/quiz.php?quiz_id=' . (int)$staticQuiz['id']);
+                exit;
+            }
+        } catch (PDOException $e) {}
+        $_SESSION['adaptive_fallback_msg'] = 'Adaptive quiz unavailable. Please try a static quiz from Browse quizzes.';
         header('Location: student_dashboard.php');
         exit;
+    }
+
+    // Validate structure before saving: ensure each question has required fields
+    $validKeys = ['question', 'option_a', 'option_b', 'option_c', 'option_d', 'correct_answer'];
+    foreach ($generated as $q) {
+        if (!is_array($q)) {
+            header('Location: student_dashboard.php');
+            exit;
+        }
+        foreach ($validKeys as $k) {
+            if (!isset($q[$k]) || !is_string($q[$k]) || trim($q[$k]) === '') {
+                header('Location: student_dashboard.php');
+                exit;
+            }
+        }
+        if (!in_array(strtoupper(trim($q['correct_answer'])), ['A', 'B', 'C', 'D'], true)) {
+            header('Location: student_dashboard.php');
+            exit;
+        }
     }
 
     $questionIds = [];
     try {
         $insert = $pdo->prepare(
             "INSERT INTO generated_questions (user_id, topic, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         );
         foreach ($generated as $q) {
             $insert->execute([
@@ -220,6 +261,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
     <!-- Quick action cards section -->
     <section class="page-section" id="actions">
         <div class="container px-4 px-lg-5">
+            <?php if (!empty($adaptive_fallback_msg)): ?>
+                <div class="alert alert-warning mb-4" role="alert"><?php echo htmlspecialchars($adaptive_fallback_msg); ?></div>
+            <?php endif; ?>
             <h2 class="text-center mt-0 mb-4">Quick Actions</h2>
             <div class="row gx-4 gx-lg-5">
                 <!-- Take Quiz card -->
