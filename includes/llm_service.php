@@ -23,6 +23,13 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
 {
     $apiKey = getenv('OPENAI_API_KEY');
     if (!$apiKey) {
+        $configFile = __DIR__ . '/../config/llm_config.php';
+        if (file_exists($configFile)) {
+            $cfg = @include $configFile;
+            $apiKey = (is_array($cfg) && isset($cfg['OPENAI_API_KEY'])) ? trim((string)$cfg['OPENAI_API_KEY']) : '';
+        }
+    }
+    if (!$apiKey) {
         // No API key configured, fail fast but do not crash the app.
         return [];
     }
