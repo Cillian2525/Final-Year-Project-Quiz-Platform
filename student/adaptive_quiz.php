@@ -50,11 +50,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['adaptive_correct_a
         if ($row) {
             $adaptive_quiz_id = (int)$row['id'];
         } else {
-            $pdo->prepare("INSERT INTO quizzes (topic, difficulty, created_by) VALUES ('Adaptive', 'medium', 1)")->execute();
+            // Choose a valid creator id for the Adaptive quiz row
+            $creator_id = $user_id;
+            try {
+                $uStmt = $pdo->query("SELECT id FROM users WHERE role = 'admin' ORDER BY id ASC LIMIT 1");
+                $adminRow = $uStmt->fetch();
+                if ($adminRow && isset($adminRow['id'])) {
+                    $creator_id = (int)$adminRow['id'];
+                }
+            } catch (PDOException $eInner) {
+                // Ignore and fall back to current user as creator
+            }
+            $insertQuiz = $pdo->prepare("INSERT INTO quizzes (topic, difficulty, created_by) VALUES ('Adaptive', 'medium', ?)");
+            $insertQuiz->execute([$creator_id]);
             $adaptive_quiz_id = (int)$pdo->lastInsertId();
         }
     } catch (PDOException $e) {
         $save_ok = false;
+        error_log('Adaptive quiz - failed to get/create quizzes row: ' . $e->getMessage());
     }
 
     if ($adaptive_quiz_id && $save_ok) {
@@ -70,6 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['adaptive_correct_a
             }
         } catch (PDOException $e) {
             $save_ok = false;
+            error_log('Adaptive quiz - failed to save attempt or link generated_questions: ' . $e->getMessage());
         }
     }
 
