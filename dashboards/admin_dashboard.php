@@ -218,7 +218,7 @@ try {
                             <i class="bi-journal-text fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Manage Quizzes</h4>
                             <p class="card-text text-muted">Create and manage quizzes</p>
-                            <a href="#" class="btn btn-primary mt-3">Go to quizzes</a>
+                            <a href="../admin/manage_quizzes.php" class="btn btn-primary mt-3">Go to quizzes</a>
                         </div>
                     </div>
                 </div>
