@@ -90,6 +90,9 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
         ],
         CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
         CURLOPT_TIMEOUT => 20,
+        // Local MAMP workaround: disable SSL verification so self-signed / missing CA certs don't break the call
+        CURLOPT_SSL_VERIFYPEER => false,
+        CURLOPT_SSL_VERIFYHOST => 0,
     ]);
 
     $rawResponse = curl_exec($ch);
