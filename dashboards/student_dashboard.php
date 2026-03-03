@@ -26,6 +26,14 @@ try {
     $available_quizzes = [];
 }
 
+$adaptive_topics = [];
+try {
+    $stmt = $pdo->query("SELECT DISTINCT topic FROM questions ORDER BY topic");
+    $adaptive_topics = $stmt->fetchAll(PDO::FETCH_COLUMN);
+} catch (PDOException $e) {
+    $adaptive_topics = [];
+}
+
 // Real stats for logged-in student (prepared statements)
 $total_quizzes_taken = 0;
 $average_score = 0;
@@ -80,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
         'last_score' => $last_score,
     ];
 
-    // Choose topic: optionally from POST (Adaptive button next to a quiz), otherwise use last attempted topic
+    // choose topic: optionally from POST (Adaptive button next to a quiz), if not use last attempted topic
     $adaptiveTopic = trim((string)($_POST['adaptive_topic'] ?? ''));
     if ($adaptiveTopic === '' || strlen($adaptiveTopic) > 100) {
         $adaptiveTopic = null;
@@ -107,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
         } catch (PDOException $e) {}
     }
 
-    // Choose difficulty based on performance for this topic (simple thresholds)
+    // Choose difficulty based on performance for this topic (withsimple thresholds)
     $adaptiveDifficulty = 'medium';
     $topicAverage = null;
     $topicLast = null;
@@ -332,7 +340,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
                             <p class="card-text text-muted">Get a personalised quiz based on your performance</p>
                             <form method="post" class="mt-3">
                                 <input type="hidden" name="start_adaptive_quiz" value="1">
-                                <button type="submit" class="btn btn-primary">Take Adaptive Quiz</button>
+                                <div class="row g-2 justify-content-center">
+                                    <div class="col-12 col-md-5">
+                                        <select name="adaptive_topic" class="form-select">
+                                            <option value="">Auto (recommended)</option>
+                                            <?php foreach ($adaptive_topics as $t): ?>
+                                                <option value="<?php echo htmlspecialchars((string)$t); ?>"><?php echo htmlspecialchars((string)$t); ?></option>
+                                            <?php endforeach; ?>
+                                        </select>
+                                    </div>
+                                    <div class="col-12 col-md-auto">
+                                        <button type="submit" class="btn btn-primary w-100">Take Adaptive Quiz</button>
+                                    </div>
+                                </div>
                             </form>
                         </div>
                     </div>
