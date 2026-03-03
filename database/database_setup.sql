@@ -94,3 +94,39 @@ INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, opt
 ('Database Basics', 'easy', 'Which SQL command adds new rows to a table?', 'ADD', 'INSERT', 'CREATE', 'UPDATE', 'B'),
 ('Database Basics', 'easy', 'What type of database uses tables and rows?', 'Document', 'Relational', 'Graph', 'Key-value', 'B'),
 ('Database Basics', 'easy', 'Which keyword removes rows from a table?', 'REMOVE', 'DROP', 'DELETE', 'CLEAR', 'C');
+
+-- Sample questions (topic: Data Structures)
+INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer) VALUES
+('Data Structures', 'easy', 'Which data structure works on a First-In-First-Out (FIFO) basis?', 'Stack', 'Queue', 'Tree', 'Graph', 'B'),
+('Data Structures', 'easy', 'Which data structure works on a Last-In-First-Out (LIFO) basis?', 'Queue', 'Heap', 'Stack', 'Linked List', 'C'),
+('Data Structures', 'easy', 'Which is the typical time complexity to access an element in an array by index?', 'O(1)', 'O(log n)', 'O(n)', 'O(n log n)', 'A'),
+('Data Structures', 'easy', 'A linked list node typically contains:', 'Only data', 'Only pointers', 'Data and a pointer/reference', 'Two arrays', 'C'),
+('Data Structures', 'easy', 'Which structure represents a hierarchy with a root node?', 'Queue', 'Tree', 'Hash map', 'Matrix', 'B'),
+('Data Structures', 'medium', 'Which traversal of a binary search tree outputs values in sorted order?', 'Preorder', 'Inorder', 'Postorder', 'Level order', 'B'),
+('Data Structures', 'medium', 'Which data structure is commonly used to implement recursion?', 'Queue', 'Stack', 'Hash table', 'Graph', 'B'),
+('Data Structures', 'medium', 'In a max-heap, the value at the root is:', 'The smallest', 'The median', 'The largest', 'Random', 'C'),
+('Data Structures', 'medium', 'Average-case time complexity of lookup in a hash table is typically:', 'O(1)', 'O(log n)', 'O(n)', 'O(n log n)', 'A'),
+('Data Structures', 'medium', 'Which graph representation is usually more memory-efficient for sparse graphs?', 'Adjacency matrix', 'Adjacency list', '2D array', 'Edge bitmap', 'B'),
+('Data Structures', 'hard', 'What is the worst-case time complexity of inserting into a hash table with many collisions (no rehashing)?', 'O(1)', 'O(log n)', 'O(n)', 'O(n log n)', 'C'),
+('Data Structures', 'hard', 'Which balancing property is used by AVL trees?', 'Red-black coloring', 'Height difference between subtrees is at most 1', 'Nodes have at most 3 children', 'Keys are stored in arrays', 'B'),
+('Data Structures', 'hard', 'Which algorithm is commonly used to find the shortest path in a weighted graph with non-negative weights?', 'DFS', 'BFS', 'Dijkstra\'s algorithm', 'Prim\'s algorithm', 'C'),
+('Data Structures', 'hard', 'In Big-O, the time complexity of merge sort is:', 'O(n)', 'O(n log n)', 'O(n^2)', 'O(log n)', 'B'),
+('Data Structures', 'hard', 'Which data structure is ideal for implementing an LRU cache efficiently?', 'Array only', 'Queue only', 'Hash map + doubly linked list', 'Binary tree only', 'C');
+
+-- Sample questions (topic: Computer Networks)
+INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer) VALUES
+('Computer Networks', 'easy', 'What does IP stand for?', 'Internet Protocol', 'Internal Process', 'Interface Program', 'Integrated Packet', 'A'),
+('Computer Networks', 'easy', 'Which device forwards packets based on IP addresses?', 'Switch', 'Router', 'Hub', 'Repeater', 'B'),
+('Computer Networks', 'easy', 'Which protocol is used to assign IP addresses automatically?', 'HTTP', 'DNS', 'DHCP', 'FTP', 'C'),
+('Computer Networks', 'easy', 'Which port is commonly used for HTTPS?', '21', '53', '80', '443', 'D'),
+('Computer Networks', 'easy', 'DNS is mainly used to:', 'Encrypt traffic', 'Translate domain names to IP addresses', 'Route packets', 'Compress data', 'B'),
+('Computer Networks', 'medium', 'Which layer of the OSI model is responsible for end-to-end communication and reliability?', 'Network', 'Transport', 'Session', 'Physical', 'B'),
+('Computer Networks', 'medium', 'Which protocol provides reliable, connection-oriented transport?', 'UDP', 'TCP', 'ICMP', 'ARP', 'B'),
+('Computer Networks', 'medium', 'Which address is used at the data link layer to deliver frames on a LAN?', 'IP address', 'MAC address', 'Port number', 'Hostname', 'B'),
+('Computer Networks', 'medium', 'NAT is commonly used to:', 'Increase bandwidth', 'Translate private IPs to a public IP', 'Resolve hostnames', 'Detect malware', 'B'),
+('Computer Networks', 'medium', 'What is the main purpose of a subnet mask?', 'Encrypt packets', 'Identify the network and host parts of an IP address', 'Assign ports', 'Measure latency', 'B'),
+('Computer Networks', 'hard', 'Which field in an IPv4 packet is decremented by routers to prevent infinite loops?', 'Checksum', 'TTL', 'Sequence number', 'Window size', 'B'),
+('Computer Networks', 'hard', 'Which technique reduces collisions in Ethernet by separating collision domains?', 'Broadcasting', 'Switching', 'Flooding', 'Fragmentation', 'B'),
+('Computer Networks', 'hard', 'In TCP, what does the three-way handshake establish?', 'DNS resolution', 'A reliable connection and initial sequence numbers', 'Packet routing tables', 'MAC address mapping', 'B'),
+('Computer Networks', 'hard', 'Which protocol is used to map an IP address to a MAC address on a local network?', 'ARP', 'ICMP', 'HTTP', 'SNMP', 'A'),
+('Computer Networks', 'hard', 'Which congestion control algorithm is associated with TCP and uses additive increase/multiplicative decrease?', 'Stop-and-wait', 'AIMD', 'Token ring', 'CSMA/CD', 'B');
