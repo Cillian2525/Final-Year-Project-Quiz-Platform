@@ -34,6 +34,56 @@ try {
     $adaptive_topics = [];
 }
 
+$default_adaptive_topic = null;
+try {
+    $stmt = $pdo->prepare("SELECT topic FROM quiz_attempts WHERE user_id = ? ORDER BY attempt_date DESC LIMIT 1");
+    $stmt->execute([$user_id]);
+    $row = $stmt->fetch(PDO::FETCH_ASSOC);
+    if ($row && isset($row['topic']) && trim((string)$row['topic']) !== '') {
+        $default_adaptive_topic = (string)$row['topic'];
+    }
+} catch (PDOException $e) {
+    $default_adaptive_topic = null;
+}
+
+if ($default_adaptive_topic === null && !empty($adaptive_topics)) {
+    $default_adaptive_topic = (string)$adaptive_topics[0];
+}
+
+$suggested_adaptive_difficulty = 'medium';
+if ($default_adaptive_topic !== null) {
+    $topicAverage = null;
+    $topicLast = null;
+    try {
+        $stmt = $pdo->prepare("SELECT AVG(percentage) FROM quiz_attempts WHERE user_id = ? AND topic = ?");
+        $stmt->execute([$user_id, $default_adaptive_topic]);
+        $avg = $stmt->fetchColumn();
+        $topicAverage = $avg !== null ? (float)$avg : null;
+    } catch (PDOException $e) {
+        $topicAverage = null;
+    }
+
+    try {
+        $stmt = $pdo->prepare("SELECT percentage FROM quiz_attempts WHERE user_id = ? AND topic = ? ORDER BY attempt_date DESC LIMIT 1");
+        $stmt->execute([$user_id, $default_adaptive_topic]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $topicLast = $row ? (float)$row['percentage'] : null;
+    } catch (PDOException $e) {
+        $topicLast = null;
+    }
+
+    $scoreSignal = $topicLast !== null ? $topicLast : $topicAverage;
+    if ($scoreSignal !== null) {
+        if ($scoreSignal >= 80) {
+            $suggested_adaptive_difficulty = 'hard';
+        } elseif ($scoreSignal < 50) {
+            $suggested_adaptive_difficulty = 'easy';
+        } else {
+            $suggested_adaptive_difficulty = 'medium';
+        }
+    }
+}
+
 // Real stats for logged-in student (prepared statements)
 $total_quizzes_taken = 0;
 $average_score = 0;
@@ -338,6 +388,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
                             <i class="bi-stars fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Adaptive Quiz</h4>
                             <p class="card-text text-muted">Get a personalised quiz based on your performance</p>
+                            <p class="mb-2">
+                                Current difficulty:
+                                <span class="badge bg-secondary text-capitalize"><?php echo htmlspecialchars($suggested_adaptive_difficulty); ?></span>
+                            </p>
                             <form method="post" class="mt-3">
                                 <input type="hidden" name="start_adaptive_quiz" value="1">
                                 <div class="row g-2 justify-content-center">
