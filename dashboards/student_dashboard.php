@@ -80,28 +80,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
         'last_score' => $last_score,
     ];
 
-    // Determine topic and difficulty: use last attempted quiz if available, otherwise fall back to first topic
-    $adaptiveTopic = null;
-    $adaptiveDifficulty = null;
-    try {
-        $stmt = $pdo->prepare("SELECT topic, difficulty FROM quiz_attempts WHERE user_id = ? ORDER BY attempt_date DESC LIMIT 1");
-        $stmt->execute([$user_id]);
-        $row = $stmt->fetch();
-        if ($row) {
-            $adaptiveTopic = $row['topic'];
-            $adaptiveDifficulty = $row['difficulty'];
-        }
-    } catch (PDOException $e) {}
+    // Choose topic: optionally from POST (Adaptive button next to a quiz), otherwise use last attempted topic
+    $adaptiveTopic = trim((string)($_POST['adaptive_topic'] ?? ''));
+    if ($adaptiveTopic === '' || strlen($adaptiveTopic) > 100) {
+        $adaptiveTopic = null;
+    }
 
-    if ($adaptiveTopic === null || $adaptiveDifficulty === null) {
+    if ($adaptiveTopic === null) {
         try {
-            $stmt = $pdo->query("SELECT topic, difficulty FROM questions ORDER BY topic, difficulty LIMIT 1");
-            $fallback = $stmt->fetch();
-            if ($fallback) {
-                $adaptiveTopic = $fallback['topic'];
-                $adaptiveDifficulty = $fallback['difficulty'];
+            $stmt = $pdo->prepare("SELECT topic FROM quiz_attempts WHERE user_id = ? ORDER BY attempt_date DESC LIMIT 1");
+            $stmt->execute([$user_id]);
+            $row = $stmt->fetch();
+            if ($row && isset($row['topic'])) {
+                $adaptiveTopic = (string)$row['topic'];
             }
         } catch (PDOException $e) {}
+    }
+
+    if ($adaptiveTopic === null) {
+        try {
+            $stmt = $pdo->query("SELECT topic FROM questions ORDER BY topic LIMIT 1");
+            $fallback = $stmt->fetch();
+            if ($fallback && isset($fallback['topic'])) {
+                $adaptiveTopic = (string)$fallback['topic'];
+            }
+        } catch (PDOException $e) {}
+    }
+
+    // Choose difficulty based on performance for this topic (simple thresholds)
+    $adaptiveDifficulty = 'medium';
+    $topicAverage = null;
+    $topicLast = null;
+    try {
+        $stmt = $pdo->prepare("SELECT AVG(percentage) FROM quiz_attempts WHERE user_id = ? AND topic = ?");
+        $stmt->execute([$user_id, $adaptiveTopic]);
+        $avg = $stmt->fetchColumn();
+        $topicAverage = $avg !== null ? (float)$avg : null;
+    } catch (PDOException $e) {}
+    try {
+        $stmt = $pdo->prepare("SELECT percentage FROM quiz_attempts WHERE user_id = ? AND topic = ? ORDER BY attempt_date DESC LIMIT 1");
+        $stmt->execute([$user_id, $adaptiveTopic]);
+        $row = $stmt->fetch();
+        $topicLast = $row ? (float)$row['percentage'] : null;
+    } catch (PDOException $e) {}
+
+    $scoreSignal = $topicLast !== null ? $topicLast : $topicAverage;
+    if ($scoreSignal !== null) {
+        if ($scoreSignal >= 80) {
+            $adaptiveDifficulty = 'hard';
+        } elseif ($scoreSignal < 50) {
+            $adaptiveDifficulty = 'easy';
+        } else {
+            $adaptiveDifficulty = 'medium';
+        }
     }
 
     if ($adaptiveTopic === null || $adaptiveDifficulty === null) {
@@ -344,6 +375,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
                                                 <a href="../student/quiz.php?quiz_id=<?php echo (int)$quiz['id']; ?>" class="btn btn-sm btn-primary">
                                                     Start Quiz
                                                 </a>
+                                                <form method="post" class="d-inline">
+                                                    <input type="hidden" name="start_adaptive_quiz" value="1">
+                                                    <input type="hidden" name="adaptive_topic" value="<?php echo htmlspecialchars($quiz['topic']); ?>">
+                                                    <button type="submit" class="btn btn-sm btn-outline-primary">Adaptive</button>
+                                                </form>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
