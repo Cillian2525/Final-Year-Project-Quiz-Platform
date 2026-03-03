@@ -145,7 +145,7 @@ try {
                             <i class="bi-list-ul fs-1 text-primary mb-3"></i>
                             <h4 class="card-title">Manage Quizzes</h4>
                             <p class="card-text text-muted">View and edit quizzes</p>
-                            <a href="#" class="btn btn-primary mt-3">View quizzes</a>
+                            <a href="../teacher/manage_quizzes.php" class="btn btn-primary mt-3">View quizzes</a>
                         </div>
                     </div>
                 </div>
