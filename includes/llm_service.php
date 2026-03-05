@@ -36,6 +36,14 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
 
     $averageScore = isset($performanceSummary['average_score']) ? (float)$performanceSummary['average_score'] : null;
     $lastScore    = isset($performanceSummary['last_score']) ? (float)$performanceSummary['last_score'] : null;
+    $masteredStems = [];
+    if (isset($performanceSummary['mastered_question_stems']) && is_array($performanceSummary['mastered_question_stems'])) {
+        $masteredStems = array_values(array_filter(array_map('strval', $performanceSummary['mastered_question_stems']), function ($s) {
+            $s = trim((string)$s);
+            return $s !== '' && strlen($s) <= 300;
+        }));
+        $masteredStems = array_slice($masteredStems, 0, 10);
+    }
 
     $systemPrompt = 'You are an educational quiz question generator. '
         . 'You must respond with JSON only, no explanations or extra text.';
@@ -50,6 +58,15 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
     }
     if ($lastScore !== null) {
         $userPrompt .= "Student last score: {$lastScore}%\n";
+    }
+
+    if (!empty($masteredStems)) {
+        $userPrompt .= "\nThe student has repeatedly answered the following questions correctly. "
+            . "Avoid generating questions that are the same as these (do not repeat them verbatim):\n";
+        foreach ($masteredStems as $i => $stem) {
+            $n = $i + 1;
+            $userPrompt .= "{$n}. {$stem}\n";
+        }
     }
 
     $userPrompt .= "\nEach question must:\n"
