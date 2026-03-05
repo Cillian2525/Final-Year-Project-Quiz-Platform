@@ -193,6 +193,67 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
         }
     }
 
+    $masteryWindowAttempts = 20;
+    $masteryThresholdCorrect = 3;
+    $masteredQuestionStems = [];
+    $adaptiveQuizId = null;
+    try {
+        $stmt = $pdo->query("SELECT id FROM quizzes WHERE topic = 'Adaptive' LIMIT 1");
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($row && isset($row['id'])) {
+            $adaptiveQuizId = (int)$row['id'];
+        }
+    } catch (PDOException $e) {
+        $adaptiveQuizId = null;
+    }
+
+    if ($adaptiveQuizId !== null) {
+        $recentAttemptIds = [];
+        try {
+            $stmt = $pdo->prepare(
+                "SELECT id FROM quiz_attempts WHERE user_id = ? AND quiz_id = ? AND topic = ? ORDER BY attempt_date DESC LIMIT {$masteryWindowAttempts}"
+            );
+            $stmt->execute([$user_id, $adaptiveQuizId, $adaptiveTopic]);
+            $recentAttemptIds = array_map('intval', $stmt->fetchAll(PDO::FETCH_COLUMN));
+        } catch (PDOException $e) {
+            $recentAttemptIds = [];
+        }
+
+        if (!empty($recentAttemptIds)) {
+            try {
+                $placeholders = implode(',', array_fill(0, count($recentAttemptIds), '?'));
+                $sql =
+                    "SELECT gqa.question_hash, COUNT(*) AS correct_count "
+                    . "FROM generated_question_attempts gqa "
+                    . "WHERE gqa.user_id = ? AND gqa.is_correct = 1 AND gqa.attempt_id IN ($placeholders) "
+                    . "GROUP BY gqa.question_hash "
+                    . "HAVING COUNT(*) >= ? "
+                    . "ORDER BY correct_count DESC";
+                $params = array_merge([$user_id], $recentAttemptIds, [$masteryThresholdCorrect]);
+                $stmt = $pdo->prepare($sql);
+                $stmt->execute($params);
+                $masteredHashes = $stmt->fetchAll(PDO::FETCH_COLUMN);
+
+                if (!empty($masteredHashes)) {
+                    $hashPlaceholders = implode(',', array_fill(0, count($masteredHashes), '?'));
+                    $sql2 =
+                        "SELECT DISTINCT gq.question_text "
+                        . "FROM generated_question_attempts gqa "
+                        . "JOIN generated_questions gq ON gq.id = gqa.generated_question_id "
+                        . "WHERE gqa.user_id = ? AND gqa.question_hash IN ($hashPlaceholders) "
+                        . "ORDER BY gq.created_at DESC LIMIT 10";
+                    $stmt2 = $pdo->prepare($sql2);
+                    $stmt2->execute(array_merge([$user_id], $masteredHashes));
+                    $masteredQuestionStems = $stmt2->fetchAll(PDO::FETCH_COLUMN);
+                }
+            } catch (PDOException $e) {
+                $masteredQuestionStems = [];
+            }
+        }
+    }
+
+    $performanceSummary['mastered_question_stems'] = $masteredQuestionStems;
+
     if ($adaptiveTopic === null || $adaptiveDifficulty === null) {
         header('Location: student_dashboard.php');
         exit;
