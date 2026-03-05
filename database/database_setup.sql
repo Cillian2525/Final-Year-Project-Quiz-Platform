@@ -84,6 +84,23 @@ CREATE TABLE IF NOT EXISTS quizzes (
     FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Per-question results for adaptive (generated) questions
+CREATE TABLE IF NOT EXISTS generated_question_attempts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    attempt_id INT NOT NULL,
+    generated_question_id INT NOT NULL,
+    user_id INT NOT NULL,
+    question_hash CHAR(64) NOT NULL COMMENT 'sha256 of normalized question text',
+    is_correct TINYINT(1) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    INDEX idx_gqa_user_id (user_id),
+    INDEX idx_gqa_attempt_id (attempt_id),
+    INDEX idx_gqa_question_hash (question_hash),
+    FOREIGN KEY (attempt_id) REFERENCES quiz_attempts(id) ON DELETE CASCADE,
+    FOREIGN KEY (generated_question_id) REFERENCES generated_questions(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Sample questions (topic: Database Basics)
 INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer) VALUES
 ('Database Basics', 'easy', 'What does SQL stand for?', 'Structured Query Language', 'Simple Query Language', 'Standard Query Language', 'Stored Query Language', 'A'),
