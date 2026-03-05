@@ -28,16 +28,39 @@ $save_ok = true;
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['adaptive_correct_answers'])) {
     $correct_answers = $_SESSION['adaptive_correct_answers'];
     $ids = $_SESSION['adaptive_question_ids'];
+    $questionTextById = [];
+    try {
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = $pdo->prepare("SELECT id, question_text FROM generated_questions WHERE id IN ($placeholders) AND user_id = ?");
+        $stmt->execute(array_merge(array_map('intval', $ids), [$user_id]));
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($rows as $r) {
+            if (isset($r['id'], $r['question_text'])) {
+                $questionTextById[(int)$r['id']] = (string)$r['question_text'];
+            }
+        }
+    } catch (PDOException $e) {
+        $questionTextById = [];
+    }
+
     $total_questions = count($correct_answers);
     $score = 0;
     $valid_choices = ['A', 'B', 'C', 'D'];
 
+    $perQuestionResults = [];
+
     foreach ($correct_answers as $i => $correct) {
         $qid = (int)($ids[$i] ?? 0);
         $submitted = isset($_POST['answers'][$qid]) ? strtoupper(trim((string)$_POST['answers'][$qid])) : '';
-        if (in_array($submitted, $valid_choices, true) && $submitted === $correct) {
+        $isCorrect = in_array($submitted, $valid_choices, true) && $submitted === $correct;
+        if ($isCorrect) {
             $score++;
         }
+        $perQuestionResults[] = [
+            'generated_question_id' => $qid,
+            'is_correct' => $isCorrect ? 1 : 0,
+            'question_text' => $questionTextById[$qid] ?? '',
+        ];
     }
     $percentage = $total_questions > 0 ? round(($score / $total_questions) * 100, 2) : 0;
     $time_taken = isset($_SESSION['adaptive_start_time']) ? (time() - (int)$_SESSION['adaptive_start_time']) : null;
@@ -80,6 +103,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['adaptive_correct_a
             $update = $pdo->prepare("UPDATE generated_questions SET attempt_id = ? WHERE id = ? AND user_id = ?");
             foreach ($ids as $gq_id) {
                 $update->execute([$attempt_id, (int)$gq_id, $user_id]);
+            }
+
+            $insertQ = $pdo->prepare(
+                "INSERT INTO generated_question_attempts (attempt_id, generated_question_id, user_id, question_hash, is_correct)
+                 VALUES (?, ?, ?, ?, ?)"
+            );
+            foreach ($perQuestionResults as $r) {
+                $qid = (int)($r['generated_question_id'] ?? 0);
+                $txt = (string)($r['question_text'] ?? '');
+                $norm = strtolower(trim(preg_replace('/\s+/', ' ', $txt)));
+                $hash = hash('sha256', $norm);
+                if ($qid > 0 && $norm !== '') {
+                    $insertQ->execute([$attempt_id, $qid, $user_id, $hash, (int)$r['is_correct']]);
+                }
             }
         } catch (PDOException $e) {
             $save_ok = false;
