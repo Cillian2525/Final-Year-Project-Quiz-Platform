@@ -354,10 +354,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
-        /* Typography: keep the template but use a modern font stack */
+        /* modern font stack */
         body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
 
-        /* Readability: dark overlay on the masthead background image */
+        /* dark overlay on the masthead background image */
         header.masthead { position: relative; }
         header.masthead::before {
             content: "";
@@ -367,15 +367,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
             pointer-events: none;
         }
         header.masthead > .container { position: relative; z-index: 1; }
-
-        /* Consistency: ensure the stats box renders as solid white (no blur/tint) */
-        #stats .card {
-            backdrop-filter: none !important;
-            -webkit-backdrop-filter: none !important;
-            filter: none !important;
-            background-color: #fff !important;
-            opacity: 1 !important;
-        }
     </style>
 </head>
 <body>
@@ -553,11 +544,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
                                                 <a href="../student/quiz.php?quiz_id=<?php echo (int)$quiz['id']; ?>" class="btn btn-sm btn-primary">
                                                     Start Quiz
                                                 </a>
-                                                <form method="post" class="d-inline">
-                                                    <input type="hidden" name="start_adaptive_quiz" value="1">
-                                                    <input type="hidden" name="adaptive_topic" value="<?php echo htmlspecialchars($quiz['topic']); ?>">
-                                                    <button type="submit" class="btn btn-sm btn-outline-primary">Adaptive</button>
-                                                </form>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
