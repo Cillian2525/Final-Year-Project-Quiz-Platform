@@ -99,18 +99,26 @@ CREATE TABLE IF NOT EXISTS generated_question_attempts (
     FOREIGN KEY (attempt_id) REFERENCES quiz_attempts(id) ON DELETE CASCADE,
     FOREIGN KEY (generated_question_id) REFERENCES generated_questions(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Sample questions (topic: Database Basics)
+-- Sample questions (topic: Databases)
 INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer) VALUES
-('Database Basics', 'easy', 'What does SQL stand for?', 'Structured Query Language', 'Simple Query Language', 'Standard Query Language', 'Stored Query Language', 'A'),
-('Database Basics', 'easy', 'Which keyword is used to retrieve data from a table?', 'FETCH', 'SELECT', 'GET', 'OPEN', 'B'),
-('Database Basics', 'medium', 'What is a primary key used for?', 'To sort results', 'To uniquely identify each row in a table', 'To link tables only', 'To encrypt data', 'B'),
-('Database Basics', 'medium', 'Which clause filters rows in a SELECT statement?', 'FILTER', 'WHERE', 'HAVING', 'LIMIT', 'B'),
-('Database Basics', 'hard', 'What does a FOREIGN KEY constraint enforce?', 'Uniqueness of values', 'Referential integrity between tables', 'Default values', 'Index creation', 'B'),
-('Database Basics', 'easy', 'Which SQL command adds new rows to a table?', 'ADD', 'INSERT', 'CREATE', 'UPDATE', 'B'),
-('Database Basics', 'easy', 'What type of database uses tables and rows?', 'Document', 'Relational', 'Graph', 'Key-value', 'B'),
-('Database Basics', 'easy', 'Which keyword removes rows from a table?', 'REMOVE', 'DROP', 'DELETE', 'CLEAR', 'C');
+('Databases', 'easy', 'What does SQL stand for?', 'Structured Query Language', 'Simple Query Language', 'Standard Query Language', 'Stored Query Language', 'A'),
+('Databases', 'easy', 'Which keyword is used to retrieve data from a table?', 'FETCH', 'SELECT', 'GET', 'OPEN', 'B'),
+('Databases', 'easy', 'Which SQL command adds new rows to a table?', 'ADD', 'INSERT', 'CREATE', 'UPDATE', 'B'),
+('Databases', 'easy', 'What type of database uses tables and rows?', 'Document', 'Relational', 'Graph', 'Key-value', 'B'),
+('Databases', 'easy', 'Which keyword removes rows from a table?', 'REMOVE', 'DROP', 'DELETE', 'CLEAR', 'C'),
+('Databases', 'medium', 'What is a primary key used for?', 'To sort results', 'To uniquely identify each row in a table', 'To link tables only', 'To encrypt data', 'B'),
+('Databases', 'medium', 'Which clause filters rows in a SELECT statement?', 'FILTER', 'WHERE', 'HAVING', 'LIMIT', 'B'),
+('Databases', 'medium', 'Which SQL keyword is used to combine rows from two tables based on a related column?', 'MERGE', 'UNION', 'JOIN', 'APPEND', 'C'),
+('Databases', 'medium', 'What is the main purpose of an index in a database?', 'To encrypt data', 'To speed up data retrieval', 'To duplicate data', 'To store backups', 'B'),
+('Databases', 'medium', 'Which normal form primarily removes partial dependency on a composite key?', '1NF', '2NF', '3NF', 'BCNF', 'B'),
+('Databases', 'hard', 'What does a FOREIGN KEY constraint enforce?', 'Uniqueness of values', 'Referential integrity between tables', 'Default values', 'Index creation', 'B'),
+('Databases', 'hard', 'ACID properties are mainly associated with:', 'Indexes', 'Transactions', 'Views', 'Triggers', 'B'),
+('Databases', 'hard', 'Which SQL statement is commonly used to inspect a query execution plan?', 'DESCRIBE', 'EXPLAIN', 'ANALYZE TABLE', 'SHOW TABLES', 'B'),
+('Databases', 'hard', 'In transaction isolation levels, which issue is prevented by SERIALIZABLE?', 'Dirty reads', 'Lost updates', 'Phantom reads', 'NULL values', 'C'),
+('Databases', 'hard', 'A deadlock occurs when:', 'A query runs too fast', 'Two transactions wait on each other to release locks', 'A table has no primary key', 'An index is missing', 'B');
 
 -- Sample questions (topic: Data Structures)
 INSERT INTO questions (topic, difficulty, question_text, option_a, option_b, option_c, option_d, correct_answer) VALUES
