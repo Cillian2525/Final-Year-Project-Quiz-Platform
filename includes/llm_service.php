@@ -177,7 +177,7 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
 // Optional: simple manual test hook (not used in normal flow)
 if (php_sapi_name() !== 'cli' && isset($_GET['llm_test']) && $_GET['llm_test'] === '1') {
     header('Content-Type: application/json; charset=utf-8');
-    $result = generateAdaptiveQuestions('Database Basics', 'easy', [
+    $result = generateAdaptiveQuestions('Databases', 'easy', [
         'average_score' => 75,
         'last_score' => 80,
     ]);
