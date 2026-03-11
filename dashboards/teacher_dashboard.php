@@ -287,6 +287,22 @@ try {
     <script src="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/js/scripts.js"></script>
     <script>
         (function () {
+            function cleanupStuckModalBackdrop() {
+                var anyShownModal = document.querySelector('.modal.show');
+                var backdrops = document.querySelectorAll('.modal-backdrop');
+                if (!anyShownModal && (backdrops.length > 0 || document.body.classList.contains('modal-open'))) {
+                    backdrops.forEach(function (b) { b.parentNode && b.parentNode.removeChild(b); });
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('padding-right');
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', cleanupStuckModalBackdrop);
+            } else {
+                cleanupStuckModalBackdrop();
+            }
+
             const form = document.getElementById('createQuizForm');
             const submitBtn = document.getElementById('createQuizSubmitBtn');
             if (form && submitBtn) {

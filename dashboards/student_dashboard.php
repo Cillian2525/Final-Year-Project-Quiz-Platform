@@ -602,6 +602,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Load Creative theme JavaScript -->
     <script src="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/js/scripts.js"></script>
+    <script>
+        (function () {
+            function cleanupStuckModalBackdrop() {
+                var anyShownModal = document.querySelector('.modal.show');
+                var backdrops = document.querySelectorAll('.modal-backdrop');
+                if (!anyShownModal && (backdrops.length > 0 || document.body.classList.contains('modal-open'))) {
+                    backdrops.forEach(function (b) { b.parentNode && b.parentNode.removeChild(b); });
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('padding-right');
+                }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', cleanupStuckModalBackdrop);
+            } else {
+                cleanupStuckModalBackdrop();
+            }
+        })();
+    </script>
 </body>
 </html>
 

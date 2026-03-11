@@ -308,13 +308,30 @@ try {
     <script src="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/js/scripts.js"></script>
     <script>
         (function() {
+            function cleanupStuckModalBackdrop() {
+                var anyShownModal = document.querySelector('.modal.show');
+                var backdrops = document.querySelectorAll('.modal-backdrop');
+                if (!anyShownModal && (backdrops.length > 0 || document.body.classList.contains('modal-open'))) {
+                    backdrops.forEach(function (b) { b.parentNode && b.parentNode.removeChild(b); });
+                    document.body.classList.remove('modal-open');
+                    document.body.style.removeProperty('padding-right');
+                }
+            }
+
             if (window.location.search.indexOf('open_users=1') !== -1) {
                 var modal = document.getElementById('usersModal');
                 if (modal) {
+                    cleanupStuckModalBackdrop();
                     var m = new bootstrap.Modal(modal);
                     m.show();
                     history.replaceState({}, '', 'admin_dashboard.php');
                 }
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', cleanupStuckModalBackdrop);
+            } else {
+                cleanupStuckModalBackdrop();
             }
         })();
     </script>
