@@ -347,6 +347,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Load Creative Bootstrap theme CSS -->
     <link href="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/css/styles.css" rel="stylesheet">
+
+    <!-- Modern font for a cleaner dashboard look -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* Typography: keep the template but use a modern font stack */
+        body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+
+        /* Readability: dark overlay on the masthead background image */
+        header.masthead { position: relative; }
+        header.masthead::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            pointer-events: none;
+        }
+        header.masthead > .container { position: relative; z-index: 1; }
+
+        /* Consistency: ensure the stats box renders as solid white (no blur/tint) */
+        #stats .card {
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            filter: none !important;
+            background-color: #fff !important;
+            opacity: 1 !important;
+        }
+    </style>
 </head>
 <body>
     <!-- Top navigation bar -->
@@ -360,104 +390,113 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
     </nav>
 
     <!-- Hero section with background image (masthead) -->
-    <header class="masthead">
-        <div class="container px-4 px-lg-5 h-100">
-            <div class="row gx-4 gx-lg-5 h-100 align-items-center justify-content-center text-center">
+    <header class="masthead" style="padding-top: 5rem; padding-bottom: 0.75rem; min-height: 0;">
+        <div class="container px-4 px-lg-5">
+            <div class="row gx-4 gx-lg-5 align-items-center justify-content-center text-center">
                 <div class="col-lg-8 align-self-end">
-                    <h1 class="text-white font-weight-bold">Student Dashboard</h1>
-                    <hr class="divider" />
+                    <h1 class="text-white fw-bold h2 mb-1">Student Dashboard</h1>
                 </div>
                 <div class="col-lg-8 align-self-baseline">
-                    <p class="text-white-75 mb-5">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></p>
-                    <a class="btn btn-primary btn-xl" href="#stats">View Stats</a>
+                    <p class="text-white-75 mb-1">Welcome, <?php echo htmlspecialchars($_SESSION['username']); ?></p>
                 </div>
             </div>
         </div>
-    </header>
 
     <!-- Statistics section with blue background -->
-    <section class="page-section bg-primary" id="stats">
+    <section class="py-2" id="stats">
         <div class="container px-4 px-lg-5">
-            <div class="row gx-4 gx-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+
+                <div class="col-12 col-lg-10">
+                    <div class="card border-0 rounded-4 shadow-sm py-2 px-2 mb-2" style="backdrop-filter: none;">
+
+                        <div class="row g-0">
 
                 <!-- Total quizzes taken -->
-                <div class="col-lg-4 col-md-6 text-center">
-                    <div class="mt-5">
-                        <div class="mb-2"><i class="bi-journal-text fs-1 text-primary"></i></div>
-                        <h3 class="h4 mb-2 text-white"><?php echo $total_quizzes_taken; ?></h3>
-                        <p class="text-white-75 mb-0">Quizzes Taken</p>
+                <div class="col-4 text-center">
+                    <div>
+                        <div class="mb-1"><i class="bi-journal-text fs-6 text-primary"></i></div>
+                        <h3 class="h6 mb-0 text-dark"><?php echo $total_quizzes_taken; ?></h3>
+                        <p class="text-muted mb-0 small">Taken</p>
                     </div>
                 </div>
                 <!-- Average score -->
-                <div class="col-lg-4 col-md-6 text-center">
-                    <div class="mt-5">
-                        <div class="mb-2"><i class="bi-graph-up fs-1 text-primary"></i></div>
-                        <h3 class="h4 mb-2 text-white"><?php echo $total_quizzes_taken > 0 ? $average_score . '%' : '0'; ?></h3>
-                        <p class="text-white-75 mb-0">Average Score</p>
+                <div class="col-4 text-center">
+                    <div>
+                        <div class="mb-1"><i class="bi-graph-up fs-6 text-primary"></i></div>
+                        <h3 class="h6 mb-0 text-dark"><?php echo $total_quizzes_taken > 0 ? $average_score . '%' : '0'; ?></h3>
+                        <p class="text-muted mb-0 small">Average</p>
                     </div>
                 </div>
                 <!-- Last score -->
-                <div class="col-lg-4 col-md-6 text-center">
-                    <div class="mt-5">
-                        <div class="mb-2"><i class="bi-check-circle fs-1 text-primary"></i></div>
-                        <h3 class="h4 mb-2 text-white"><?php echo $last_score !== null ? number_format($last_score, 1) . '%' : '—'; ?></h3>
-                        <p class="text-white-75 mb-0">Last Score</p>
+                <div class="col-4 text-center">
+                    <div>
+                        <div class="mb-1"><i class="bi-check-circle fs-6 text-primary"></i></div>
+                        <h3 class="h6 mb-0 text-dark"><?php echo $last_score !== null ? number_format($last_score, 1) . '%' : '—'; ?></h3>
+                        <p class="text-muted mb-0 small">Last</p>
                     </div>
                 </div>
+
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         </div>
     </section>
 
     <!-- Quick action cards section -->
-    <section class="page-section" id="actions">
+    <section class="py-2" id="actions">
         <div class="container px-4 px-lg-5">
             <?php if (!empty($adaptive_fallback_msg)): ?>
                 <div class="alert alert-warning mb-4" role="alert"><?php echo htmlspecialchars($adaptive_fallback_msg); ?></div>
             <?php endif; ?>
-            <h2 class="text-center mt-0 mb-4">Quick Actions</h2>
-            <div class="row gx-4 gx-lg-5">
+            <div class="row gx-4 gx-lg-5 justify-content-center">
+                <div class="col-12 col-lg-10">
+                    <div class="row g-2 g-lg-3">
                 <!-- Take Quiz card -->
-                <div class="col-lg-6 col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column text-center">
-                            <i class="bi-book fs-1 text-primary mb-3"></i>
-                            <h4 class="card-title">Take Quiz</h4>
-                            <p class="card-text text-muted">Browse available quizzes</p>
-                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#availableQuizzesModal">
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 border-0 rounded-4 shadow-sm">
+                        <div class="card-body d-flex flex-column text-center p-2">
+                            <i class="bi-book fs-6 text-primary mb-1"></i>
+                            <h4 class="card-title h6 mb-1">Take Quiz</h4>
+                            <p class="card-text text-muted small mb-1">Browse quizzes</p>
+                            <button type="button" class="btn btn-sm btn-primary px-3 rounded-pill mt-0 align-self-center" data-bs-toggle="modal" data-bs-target="#availableQuizzesModal">
                                 Browse quizzes
                             </button>
                         </div>
                     </div>
                 </div>
                 <!-- View Results card -->
-                <div class="col-lg-6 col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column text-center">
-                            <i class="bi-bar-chart fs-1 text-primary mb-3"></i>
-                            <h4 class="card-title">View Results</h4>
-                            <p class="card-text text-muted">Check your progress</p>
-                            <button type="button" class="btn btn-primary mt-3" data-bs-toggle="modal" data-bs-target="#resultsModal">
+                <div class="col-lg-6 col-md-6">
+                    <div class="card h-100 border-0 rounded-4 shadow-sm">
+                        <div class="card-body d-flex flex-column text-center p-2">
+                            <i class="bi-bar-chart fs-6 text-primary mb-1"></i>
+                            <h4 class="card-title h6 mb-1">View Results</h4>
+                            <p class="card-text text-muted small mb-1">Your attempts</p>
+                            <button type="button" class="btn btn-sm btn-primary px-3 rounded-pill mt-0 align-self-center" data-bs-toggle="modal" data-bs-target="#resultsModal">
                                 My results
                             </button>
                         </div>
                     </div>
                 </div>
                 <!-- Adaptive Quiz card -->
-                <div class="col-lg-12 col-md-12 mb-4">
-                    <div class="card h-100">
-                        <div class="card-body d-flex flex-column text-center">
-                            <i class="bi-stars fs-1 text-primary mb-3"></i>
-                            <h4 class="card-title">Adaptive Quiz</h4>
-                            <p class="card-text text-muted">Get a personalised quiz based on your performance</p>
-                            <p class="mb-2">
+                <div class="col-12 col-lg-9 mx-auto">
+                    <div class="card h-100 border-0 rounded-4 shadow-sm">
+                        <div class="card-body d-flex flex-column text-center p-2">
+                            <i class="bi-stars fs-6 text-primary mb-1"></i>
+                            <h4 class="card-title h6 mb-1">Adaptive Quiz</h4>
+                            <p class="card-text text-muted small mb-1">Personalised quiz</p>
+                            <p class="mb-0 small">
                                 Current difficulty:
                                 <span class="badge bg-secondary text-capitalize"><?php echo htmlspecialchars($suggested_adaptive_difficulty); ?></span>
                             </p>
-                            <form method="post" class="mt-3">
+                            <form method="post" class="mt-0">
                                 <input type="hidden" name="start_adaptive_quiz" value="1">
                                 <div class="row g-2 justify-content-center">
                                     <div class="col-12 col-md-5">
-                                        <select name="adaptive_topic" class="form-select">
+                                        <select name="adaptive_topic" class="form-select form-select-sm">
                                             <option value="">Auto (recommended)</option>
                                             <?php foreach ($adaptive_topics as $t): ?>
                                                 <option value="<?php echo htmlspecialchars((string)$t); ?>"><?php echo htmlspecialchars((string)$t); ?></option>
@@ -465,16 +504,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
                                         </select>
                                     </div>
                                     <div class="col-12 col-md-auto">
-                                        <button type="submit" class="btn btn-primary w-100">Take Adaptive Quiz</button>
+                                        <button type="submit" class="btn btn-sm btn-primary px-3 rounded-pill">Take Adaptive Quiz</button>
                                     </div>
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
+
+    </header>
 
     <!-- Available quizzes modal -->
     <div class="modal fade" id="availableQuizzesModal" tabindex="-1" aria-labelledby="availableQuizzesModalLabel" aria-hidden="true">
@@ -575,7 +618,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
     <script src="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/js/scripts.js"></script>
 </body>
 </html>
-
 
 
 
