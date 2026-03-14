@@ -1,13 +1,14 @@
 <?php
 // Database connection settings
-$host = 'localhost:8889';      // Database server address and port
-$db   = 'quiz_system';         // Database name
-$user = 'root';                // Database username
-$pass = 'root';                // Database password
-$charset = 'utf8mb4';          // Character encoding
+$host = getenv('MYSQLHOST');      // Database server address
+$port = getenv('MYSQLPORT');      // Database port
+$db   = getenv('MYSQLDATABASE');  // Database name
+$user = getenv('MYSQLUSER');      // Database username
+$pass = getenv('MYSQLPASSWORD');  // Database password
+$charset = 'utf8mb4';             // Character encoding
 
 // Create Data Source Name (DSN) string for PDO connection
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$dsn = "mysql:host=$host;port=$port;dbname=$db;charset=$charset";
 
 // PDO connection options
 $options = [
