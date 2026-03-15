@@ -90,6 +90,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Load Creative Bootstrap theme CSS -->
     <link href="https://cdn.jsdelivr.net/gh/StartBootstrap/startbootstrap-creative@gh-pages/css/styles.css" rel="stylesheet">
+
+    <style>
+        html, body { height: 100%; }
+        body {
+            min-height: 100vh;
+            background:
+                linear-gradient(135deg, rgba(241, 245, 255, 0.55), rgba(244, 240, 255, 0.55)),
+                url("../assets/Site Background.png");
+            background-repeat: no-repeat, no-repeat;
+            background-position: center, center;
+            background-size: cover, cover;
+            background-attachment: fixed, fixed;
+        }
+        .page-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            background: transparent !important;
+        }
+        .card {
+            border: 0;
+            border-radius: 1rem;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
+        }
+    </style>
 </head>
 <body>
     <!-- Main content section -->
