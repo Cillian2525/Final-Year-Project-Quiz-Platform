@@ -378,7 +378,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
                 <span>IntelliQuiz</span>
             </a>
             <div class="navbar-nav ms-auto">
-                <a class="nav-link" href="../auth/logout.php">Logout</a>
+                <a class="nav-link" href="../auth/logout.php" style="color: rgba(255, 255, 255, 0.92) !important;">Logout</a>
             </div>
         </div>
     </nav>
