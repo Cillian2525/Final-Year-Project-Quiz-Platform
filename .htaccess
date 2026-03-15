@@ -1,0 +1,5 @@
+SetEnv MYSQLHOST localhost
+SetEnv MYSQLPORT 8889
+SetEnv MYSQLDATABASE quiz_system
+SetEnv MYSQLUSER root
+SetEnv MYSQLPASSWORD root
