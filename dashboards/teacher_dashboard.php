@@ -68,7 +68,7 @@ try {
     <!-- Basic HTML page setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Teacher Dashboard - Quiz System</title>
+    <title>Teacher Dashboard - IntelliQuiz</title>
     <!-- Load Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Load Bootstrap Icons -->
@@ -97,7 +97,7 @@ try {
     <!-- Top navigation bar -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
         <div class="container px-4 px-lg-5">
-            <a class="navbar-brand" href="teacher_dashboard.php">Quiz System</a>
+            <a class="navbar-brand" href="teacher_dashboard.php">IntelliQuiz</a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="../auth/logout.php">Logout</a>
             </div>
