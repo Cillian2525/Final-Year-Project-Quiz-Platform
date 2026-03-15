@@ -80,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- Basic HTML page setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Quiz System</title>
+    <title>Register - IntelliQuiz</title>
     <!-- Load Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Load Bootstrap Icons -->
@@ -97,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="card-body">
                         <!-- Page header -->
                         <h2 class="h4 text-center mb-3">Create Account</h2>
-                        <p class="text-muted text-center mb-4">Join our quiz system</p>
+                        <p class="text-muted text-center mb-4">Join IntelliQuiz</p>
 
                         <!-- Display error message if registration fails -->
                         <?php if ($error): ?>

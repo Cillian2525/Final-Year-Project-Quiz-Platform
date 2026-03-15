@@ -83,7 +83,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- Basic HTML page setup -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Quiz System</title>
+    <title>Login - IntelliQuiz</title>
     <!-- Load Bootstrap CSS for styling -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Load Bootstrap Icons for icons -->
@@ -98,7 +98,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Page header -->
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-lg-8 col-xl-6 text-center">
-                    <h2 class="mt-0">Quiz System</h2>
+                    <h2 class="mt-0">IntelliQuiz</h2>
                     <hr class="divider" />
                     <p class="text-muted mb-5">Please log in to continue</p>
                 </div>
