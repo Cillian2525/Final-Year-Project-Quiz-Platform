@@ -97,7 +97,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <div class="card-body">
                         <!-- Page header -->
                         <h2 class="h4 text-center mb-3">Create Account</h2>
-                        <p class="text-muted text-center mb-4">Join IntelliQuiz</p>
+                        <p class="text-muted text-center mb-4 d-flex align-items-center justify-content-center gap-2">
+                            <img src="../assets/intelliquiz-icon.svg" alt="IntelliQuiz" width="22" height="22" style="display:block;">
+                            <span>Join IntelliQuiz</span>
+                        </p>
 
                         <!-- Display error message if registration fails -->
                         <?php if ($error): ?>

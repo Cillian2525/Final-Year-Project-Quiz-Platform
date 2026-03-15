@@ -98,7 +98,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             <!-- Page header -->
             <div class="row gx-4 gx-lg-5 justify-content-center">
                 <div class="col-lg-8 col-xl-6 text-center">
-                    <h2 class="mt-0">IntelliQuiz</h2>
+                    <div class="d-inline-flex align-items-center gap-2">
+                        <img src="../assets/intelliquiz-icon.svg" alt="IntelliQuiz" width="28" height="28" style="display:block;">
+                        <h2 class="mt-0 mb-0">IntelliQuiz</h2>
+                    </div>
                     <hr class="divider" />
                     <p class="text-muted mb-5">Please log in to continue</p>
                 </div>

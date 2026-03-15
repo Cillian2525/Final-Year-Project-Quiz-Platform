@@ -132,7 +132,10 @@ try {
     <!-- Top navigation bar -->
     <nav class="navbar navbar-expand-lg navbar-light fixed-top py-3" id="mainNav">
         <div class="container px-4 px-lg-5">
-            <a class="navbar-brand" href="admin_dashboard.php">IntelliQuiz</a>
+            <a class="navbar-brand d-flex align-items-center gap-2" href="admin_dashboard.php">
+                <img src="../assets/intelliquiz-icon.svg" alt="IntelliQuiz" width="28" height="28" style="display:block;">
+                <span>IntelliQuiz</span>
+            </a>
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="../auth/logout.php">Logout</a>
             </div>
