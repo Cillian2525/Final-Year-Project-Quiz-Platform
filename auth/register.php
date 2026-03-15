@@ -112,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
     <!-- Registration form container -->
-    <div class="container py-5">
+    <div class="container pt-5 pb-4" style="padding-top: 6rem !important;">
         <div class="row justify-content-center">
             <div class="col-md-7 col-lg-5">
                 <div class="card shadow-sm">

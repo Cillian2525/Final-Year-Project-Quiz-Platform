@@ -106,7 +106,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         .page-section {
             min-height: 100vh;
             display: flex;
-            align-items: center;
+            align-items: flex-start;
+            padding-top: 6rem;
+            padding-bottom: 2rem;
             background: transparent !important;
         }
         .card {

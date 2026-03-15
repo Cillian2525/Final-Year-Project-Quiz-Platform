@@ -76,7 +76,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
                         A multi-role quiz platform with static quizzes and adaptive difficulty tailored to your needs.
                     </p>
                     <div class="d-flex flex-column flex-sm-row gap-2 justify-content-center">
-                        <a class="btn btn-primary px-4 rounded-pill" href="auth/login.php">Get Started</a>
+                        <a class="btn btn-primary px-4 rounded-pill" href="auth/login.php">Log In</a>
                         <a class="btn btn-outline-dark px-4 rounded-pill" href="auth/register.php">Create Account</a>
                     </div>
                 </div>
