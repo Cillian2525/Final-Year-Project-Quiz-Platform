@@ -34,6 +34,49 @@ try {
     $adaptive_topics = [];
 }
 
+$topicDifficultyCache = [];
+$getTopicDifficulty = function (string $topic) use ($pdo, $user_id, &$topicDifficultyCache): string {
+    if (isset($topicDifficultyCache[$topic])) {
+        return $topicDifficultyCache[$topic];
+    }
+
+    $topicAverage = null;
+    $topicLast = null;
+
+    try {
+        $stmt = $pdo->prepare("SELECT AVG(percentage) FROM quiz_attempts WHERE user_id = ? AND topic = ?");
+        $stmt->execute([$user_id, $topic]);
+        $avg = $stmt->fetchColumn();
+        $topicAverage = $avg !== null ? (float)$avg : null;
+    } catch (PDOException $e) {
+        $topicAverage = null;
+    }
+
+    try {
+        $stmt = $pdo->prepare("SELECT percentage FROM quiz_attempts WHERE user_id = ? AND topic = ? ORDER BY attempt_date DESC LIMIT 1");
+        $stmt->execute([$user_id, $topic]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $topicLast = $row ? (float)$row['percentage'] : null;
+    } catch (PDOException $e) {
+        $topicLast = null;
+    }
+
+    $adaptiveDifficulty = 'medium';
+    $scoreSignal = $topicLast !== null ? $topicLast : $topicAverage;
+    if ($scoreSignal !== null) {
+        if ($scoreSignal >= 80) {
+            $adaptiveDifficulty = 'hard';
+        } elseif ($scoreSignal < 50) {
+            $adaptiveDifficulty = 'easy';
+        } else {
+            $adaptiveDifficulty = 'medium';
+        }
+    }
+
+    $topicDifficultyCache[$topic] = $adaptiveDifficulty;
+    return $adaptiveDifficulty;
+};
+
 $default_adaptive_topic = null;
 try {
     $stmt = $pdo->prepare("SELECT topic FROM quiz_attempts WHERE user_id = ? ORDER BY attempt_date DESC LIMIT 1");
@@ -50,38 +93,10 @@ if ($default_adaptive_topic === null && !empty($adaptive_topics)) {
     $default_adaptive_topic = (string)$adaptive_topics[0];
 }
 
-$suggested_adaptive_difficulty = 'medium';
-if ($default_adaptive_topic !== null) {
-    $topicAverage = null;
-    $topicLast = null;
-    try {
-        $stmt = $pdo->prepare("SELECT AVG(percentage) FROM quiz_attempts WHERE user_id = ? AND topic = ?");
-        $stmt->execute([$user_id, $default_adaptive_topic]);
-        $avg = $stmt->fetchColumn();
-        $topicAverage = $avg !== null ? (float)$avg : null;
-    } catch (PDOException $e) {
-        $topicAverage = null;
-    }
-
-    try {
-        $stmt = $pdo->prepare("SELECT percentage FROM quiz_attempts WHERE user_id = ? AND topic = ? ORDER BY attempt_date DESC LIMIT 1");
-        $stmt->execute([$user_id, $default_adaptive_topic]);
-        $row = $stmt->fetch(PDO::FETCH_ASSOC);
-        $topicLast = $row ? (float)$row['percentage'] : null;
-    } catch (PDOException $e) {
-        $topicLast = null;
-    }
-
-    $scoreSignal = $topicLast !== null ? $topicLast : $topicAverage;
-    if ($scoreSignal !== null) {
-        if ($scoreSignal >= 80) {
-            $suggested_adaptive_difficulty = 'hard';
-        } elseif ($scoreSignal < 50) {
-            $suggested_adaptive_difficulty = 'easy';
-        } else {
-            $suggested_adaptive_difficulty = 'medium';
-        }
-    }
+$adaptive_topic_difficulties = [];
+foreach (array_slice($adaptive_topics, 0, 3) as $t) {
+    $tt = (string)$t;
+    $adaptive_topic_difficulties[$tt] = $getTopicDifficulty($tt);
 }
 
 // Real stats for logged-in student (prepared statements)
@@ -482,10 +497,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
                             <i class="bi-stars fs-6 text-primary mb-1"></i>
                             <h4 class="card-title h6 mb-1">Adaptive Quiz</h4>
                             <p class="card-text text-muted small mb-1">Personalised quiz</p>
-                            <p class="mb-0 small">
-                                Current difficulty:
-                                <span class="badge bg-secondary text-capitalize"><?php echo htmlspecialchars($suggested_adaptive_difficulty); ?></span>
-                            </p>
+                            <?php if (!empty($adaptive_topic_difficulties)): ?>
+                                <div class="mb-0 small">
+                                    <?php foreach ($adaptive_topic_difficulties as $topicName => $diff): ?>
+                                        <div>
+                                            <?php echo htmlspecialchars($topicName); ?> difficulty:
+                                            <span class="badge bg-secondary text-capitalize"><?php echo htmlspecialchars($diff); ?></span>
+                                        </div>
+                                    <?php endforeach; ?>
+                                </div>
+                            <?php endif; ?>
                             <form method="post" class="mt-0">
                                 <input type="hidden" name="start_adaptive_quiz" value="1">
                                 <div class="row g-2 justify-content-center">
@@ -493,7 +514,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['start_adaptive_quiz']
                                         <select name="adaptive_topic" class="form-select form-select-sm">
                                             <option value="">Auto (recommended)</option>
                                             <?php foreach ($adaptive_topics as $t): ?>
-                                                <option value="<?php echo htmlspecialchars((string)$t); ?>"><?php echo htmlspecialchars((string)$t); ?></option>
+                                                <?php $td = $getTopicDifficulty((string)$t); ?>
+                                                <option value="<?php echo htmlspecialchars((string)$t); ?>"><?php echo htmlspecialchars((string)$t); ?> difficulty: <?php echo htmlspecialchars(ucfirst($td)); ?></option>
                                             <?php endforeach; ?>
                                         </select>
                                     </div>
