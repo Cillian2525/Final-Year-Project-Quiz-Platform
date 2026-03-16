@@ -40,6 +40,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
         .landing-title { color: #0b1220 !important; }
         .landing-brand { color: #0b1220 !important; }
         .landing-hero { margin-top: 0; }
+        .landing-stack { width: 100%; transform: translateY(1.25rem); }
         header.masthead {
             background: url("assets/Site Background.png");
             background-size: cover;
@@ -99,7 +100,7 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
                                 <div class="col-12 col-md-4">
                                     <div class="border rounded-3 p-2 h-100">
                                         <div class="fw-semibold small">Students</div>
-                                        <div class="text-muted small">Take quizzes, view results, practise topics.</div>
+                                        <div class="text-muted small">Take quizzes, view results, practice topics.</div>
                                     </div>
                                 </div>
                                 <div class="col-12 col-md-4">
@@ -112,6 +113,44 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
                                     <div class="border rounded-3 p-2 h-100">
                                         <div class="fw-semibold small">Admins</div>
                                         <div class="text-muted small">Manage users and oversee platform activity.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row gx-4 gx-lg-5 justify-content-center mt-4">
+                    <div class="col-12 col-lg-10 col-xl-8">
+                        <div class="card border-0 rounded-4 shadow-sm">
+                            <div class="card-body p-3">
+                                <div class="d-flex align-items-center justify-content-center gap-2 mb-2">
+                                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                        <i class="bi bi-lightning-charge-fill"></i>
+                                    </div>
+                                    <div class="text-start">
+                                        <div class="fw-semibold">Key features</div>
+                                        <div class="text-muted small">A quick overview of what IntelliQuiz offers</div>
+                                    </div>
+                                </div>
+                                <div class="row g-2">
+                                    <div class="col-12 col-md-4">
+                                        <div class="border rounded-3 p-2 h-100">
+                                            <div class="fw-semibold small">Static quizzes</div>
+                                            <div class="text-muted small">Topic-based quizzes with clear scoring and feedback.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="border rounded-3 p-2 h-100">
+                                            <div class="fw-semibold small">Adaptive difficulty</div>
+                                            <div class="text-muted small">Difficulty adjusts based on recent performance per topic.</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <div class="border rounded-3 p-2 h-100">
+                                            <div class="fw-semibold small">Results tracking</div>
+                                            <div class="text-muted small">Review attempts and monitor progress over time.</div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
