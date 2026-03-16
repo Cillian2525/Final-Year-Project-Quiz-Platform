@@ -21,6 +21,7 @@ const LLM_MODEL        = 'gpt-4.1-mini';
  */
 function generateAdaptiveQuestions(string $topic, string $difficulty, array $performanceSummary): array
 {
+    // API key: prefer environment variable (safe for deployment), but allow a local config file for dev.
     $apiKey = getenv('OPENAI_API_KEY');
     if (!$apiKey) {
         $configFile = __DIR__ . '/../config/llm_config.php';
@@ -34,10 +35,12 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
         return [];
     }
 
+    // We pass lightweight performance context to influence difficulty/coverage.
     $averageScore = isset($performanceSummary['average_score']) ? (float)$performanceSummary['average_score'] : null;
     $lastScore    = isset($performanceSummary['last_score']) ? (float)$performanceSummary['last_score'] : null;
     $masteredStems = [];
     if (isset($performanceSummary['mastered_question_stems']) && is_array($performanceSummary['mastered_question_stems'])) {
+        // Keep this short and clean so we don't blow up the prompt.
         $masteredStems = array_values(array_filter(array_map('strval', $performanceSummary['mastered_question_stems']), function ($s) {
             $s = trim((string)$s);
             return $s !== '' && strlen($s) <= 300;
@@ -48,7 +51,7 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
     $systemPrompt = 'You are an educational quiz question generator. '
         . 'You must respond with JSON only, no explanations or extra text.';
 
-    // Basic prompt for now; will be refined in later sections.
+    // We instruct the model to return JSON only (no prose) to simplify parsing and reduce failure cases.
     $userPrompt = "Generate exactly 5 multiple choice questions for a quiz.\n"
         . "Topic: {$topic}\n"
         . "Difficulty level: {$difficulty}\n";
@@ -61,6 +64,7 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
     }
 
     if (!empty($masteredStems)) {
+        // This is a simple repetition-avoidance signal: don't repeat stems the student has already mastered.
         $userPrompt .= "\nThe student has repeatedly answered the following questions correctly. "
             . "Avoid generating questions that are the same as these (do not repeat them verbatim):\n";
         foreach ($masteredStems as $i => $stem) {
@@ -107,7 +111,8 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
         ],
         CURLOPT_POSTFIELDS => json_encode($payload, JSON_UNESCAPED_UNICODE),
         CURLOPT_TIMEOUT => 20,
-        // Local MAMP workaround: disable SSL verification so self-signed / missing CA certs don't break the call
+        // Local MAMP workaround: disable SSL verification so missing CA certs don't break the call.
+        // In production you would normally enable verification.
         CURLOPT_SSL_VERIFYPEER => false,
         CURLOPT_SSL_VERIFYHOST => 0,
     ]);
@@ -125,6 +130,7 @@ function generateAdaptiveQuestions(string $topic, string $difficulty, array $per
         return [];
     }
 
+    // Defensive parsing: the API can fail in many ways, so we validate each step.
     $decoded = json_decode($rawResponse, true);
     if (!is_array($decoded)) {
         return [];

@@ -2,7 +2,7 @@
 session_start();
 require '../includes/db_connect.php';
 
-// Security: only students may take adaptive quizzes
+// Security: adaptive quizzes are a student-only flow.
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header('Location: ../auth/login.php');
     exit;
@@ -13,6 +13,8 @@ $question_ids = $_SESSION['adaptive_question_ids'] ?? [];
 $topic = $_SESSION['adaptive_topic'] ?? '';
 $difficulty = $_SESSION['adaptive_difficulty'] ?? '';
 
+// The adaptive quiz is generated on the dashboard, then this page simply loads the generated question IDs.
+// If the session is missing, we send the student back to start the flow again.
 if (empty($question_ids) || $topic === '' || !in_array($difficulty, ['easy', 'medium', 'hard'], true)) {
     header('Location: ../dashboards/student_dashboard.php');
     exit;
@@ -24,7 +26,8 @@ $total_questions = 0;
 $percentage = 0;
 $save_ok = true;
 
-// Handle quiz submission
+// Handle quiz submission.
+// Correct answers are stored in-session to avoid exposing the answer key in the HTML.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['adaptive_correct_answers'])) {
     $correct_answers = $_SESSION['adaptive_correct_answers'];
     $ids = $_SESSION['adaptive_question_ids'];
@@ -65,7 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['adaptive_correct_a
     $percentage = $total_questions > 0 ? round(($score / $total_questions) * 100, 2) : 0;
     $time_taken = isset($_SESSION['adaptive_start_time']) ? (time() - (int)$_SESSION['adaptive_start_time']) : null;
 
-    // Get or create adaptive quiz (quiz_id required for quiz_attempts)
+    // We store adaptive attempts in the same `quiz_attempts` table as static quizzes.
+    // To satisfy the `quiz_id` foreign key, we ensure there is a single 'Adaptive' row in `quizzes`.
     $adaptive_quiz_id = null;
     try {
         $stmt = $pdo->query("SELECT id FROM quizzes WHERE topic = 'Adaptive' LIMIT 1");
@@ -99,12 +103,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['adaptive_correct_a
             $stmt->execute([$user_id, $adaptive_quiz_id, $topic, $difficulty, $score, $total_questions, $percentage, $time_taken]);
             $attempt_id = (int)$pdo->lastInsertId();
 
-            // Link generated_questions to this attempt
+            // Link generated questions to this attempt so we can trace exactly which 5 were shown.
             $update = $pdo->prepare("UPDATE generated_questions SET attempt_id = ? WHERE id = ? AND user_id = ?");
             foreach ($ids as $gq_id) {
                 $update->execute([$attempt_id, (int)$gq_id, $user_id]);
             }
 
+            // Store per-question correctness for adaptive quizzes.
+            // This lets us implement mastery/repetition avoidance without saving full answer history for static quizzes.
             $insertQ = $pdo->prepare(
                 "INSERT INTO generated_question_attempts (attempt_id, generated_question_id, user_id, question_hash, is_correct)
                  VALUES (?, ?, ?, ?, ?)"
@@ -124,11 +130,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_SESSION['adaptive_correct_a
         }
     }
 
+    // Clear adaptive session state so a refresh doesn't re-submit the same attempt.
     unset($_SESSION['adaptive_question_ids'], $_SESSION['adaptive_topic'], $_SESSION['adaptive_difficulty'], $_SESSION['adaptive_correct_answers'], $_SESSION['adaptive_start_time']);
     $show_result = true;
 }
 
-// Load generated questions from database
+// Load the generated questions that were created on the dashboard.
 $questions = [];
 if (!$show_result) {
     $placeholders = implode(',', array_fill(0, count($question_ids), '?'));
@@ -142,6 +149,7 @@ if (!$show_result) {
         exit;
     }
 
+    // Store the answer key in-session for grading.
     $_SESSION['adaptive_correct_answers'] = array_column($questions, 'correct_answer');
     $_SESSION['adaptive_start_time'] = time();
 }

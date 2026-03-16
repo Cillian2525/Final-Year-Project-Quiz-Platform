@@ -2,13 +2,14 @@
 session_start();
 require '../includes/db_connect.php';
 
-// Security: only students may take quizzes
+// Security: only students may take quizzes (simple role guard to protect routes).
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header('Location: ../auth/login.php');
     exit;
 }
 
-// Quiz must be started with a valid quiz_id (from GET on first load, POST on submit)
+// Quiz must be started with a valid quiz_id.
+// We read it from GET on first load, and from POST on submit so the form is self-contained.
 $valid_difficulties = ['easy', 'medium', 'hard'];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $quiz_id = isset($_POST['quiz_id']) ? (int)$_POST['quiz_id'] : 0;
@@ -20,7 +21,9 @@ if ($quiz_id <= 0) {
     exit;
 }
 
-// Fetch quiz record from quizzes table
+// Fetch quiz record from quizzes table.
+// For static quizzes, this row mainly defines the topic + difficulty.
+// The actual 5 questions are pulled from the shared `questions` bank when a student attempts it.
 try {
     $stmt = $pdo->prepare("SELECT topic, difficulty FROM quizzes WHERE id = ?");
     $stmt->execute([$quiz_id]);
@@ -48,7 +51,9 @@ $percentage = 0;
 $error_message = '';
 $save_ok = true;
 
-// Handle quiz submission
+// Handle quiz submission.
+// We store the chosen question IDs + correct answers in the session so the student can't change
+// the question set or tamper with the correct answers on the client side.
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answers'])) {
     $correct_answers = $_SESSION['quiz_correct_answers'];
     $question_ids = $_SESSION['quiz_question_ids'];
@@ -65,6 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answ
     $percentage = $total_questions > 0 ? round(($score / $total_questions) * 100, 2) : 0;
     $time_taken = isset($_SESSION['quiz_start_time']) ? (time() - (int)$_SESSION['quiz_start_time']) : null;
 
+    // We save a summary of the attempt (score/percentage/time). This is what powers dashboards/results.
     $save_ok = false;
     try {
         $stmt = $pdo->prepare("INSERT INTO quiz_attempts (user_id, quiz_id, topic, difficulty, score, total_questions, percentage, time_taken) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
@@ -77,6 +83,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_SESSION['quiz_correct_answ
 }
 
 if (!$show_result) {
+    // Static quiz generation = randomly sample 5 matching questions from the bank.
+    // Each student attempt can get a different set, but questions are not duplicated in the DB.
     $sql = "SELECT id, question_text, option_a, option_b, option_c, option_d, correct_answer FROM questions WHERE topic = ? AND difficulty = ? ORDER BY RAND() LIMIT 5";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$topic, $difficulty]);
@@ -86,6 +94,8 @@ if (!$show_result) {
         $error_message = 'Not enough questions for this topic and difficulty.';
         $questions = [];
     } else {
+        // Cache the exact question set for this attempt in the session.
+        // That way, the POST handler grades the same 5 questions the student saw.
         $_SESSION['quiz_question_ids'] = array_column($questions, 'id');
         $_SESSION['quiz_correct_answers'] = array_column($questions, 'correct_answer');
         $_SESSION['quiz_start_time'] = time();

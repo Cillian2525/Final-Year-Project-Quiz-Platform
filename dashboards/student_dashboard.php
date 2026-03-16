@@ -34,12 +34,16 @@ try {
     $adaptive_topics = [];
 }
 
+// Cache to store per-topic difficulty suggestions to avoid redundant DB queries
 $topicDifficultyCache = [];
+// Function to calculate adaptive difficulty for a given topic
 $getTopicDifficulty = function (string $topic) use ($pdo, $user_id, &$topicDifficultyCache): string {
+    // Small cache so we don't run multiple DB queries per topic in different parts of the page.
     if (isset($topicDifficultyCache[$topic])) {
         return $topicDifficultyCache[$topic];
     }
 
+    // Calculate average and last score for the topic
     $topicAverage = null;
     $topicLast = null;
 
@@ -61,6 +65,7 @@ $getTopicDifficulty = function (string $topic) use ($pdo, $user_id, &$topicDiffi
         $topicLast = null;
     }
 
+    // Simple thresholds to map performance -> difficulty suggestion.
     $adaptiveDifficulty = 'medium';
     $scoreSignal = $topicLast !== null ? $topicLast : $topicAverage;
     if ($scoreSignal !== null) {
@@ -96,6 +101,7 @@ if ($default_adaptive_topic === null && !empty($adaptive_topics)) {
 $adaptive_topic_difficulties = [];
 foreach (array_slice($adaptive_topics, 0, 3) as $t) {
     $tt = (string)$t;
+    // UI: show 3 topic-specific difficulty suggestions instead of one global value.
     $adaptive_topic_difficulties[$tt] = $getTopicDifficulty($tt);
 }
 
