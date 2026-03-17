@@ -54,6 +54,14 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
             pointer-events: none;
         }
         header.masthead > .container { position: relative; z-index: 1; }
+
+        @media (max-height: 760px) {
+            header.masthead { padding-top: 4.5rem !important; padding-bottom: 1rem !important; }
+            header.masthead .mt-4 { margin-top: 1rem !important; }
+            header.masthead .card-body { padding: 0.9rem !important; }
+            header.masthead .display-6 { font-size: 2rem; }
+            header.masthead p.text-muted { margin-bottom: 0.75rem !important; }
+        }
     </style>
 </head>
 
